@@ -1,4 +1,4 @@
-# 4300-Flask-Template-JSON
+# ItchPick
 
 ## Contents
 
