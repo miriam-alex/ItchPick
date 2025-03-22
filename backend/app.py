@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 import pandas as pd
@@ -18,13 +18,18 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the path to the JSON file relative to the current script
-json_file_path = os.path.join(current_directory, 'games.json')
+json_file_path = os.path.join(current_directory, 'top_rated_games.json')
 
 # Assuming your JSON data is stored in a file named 'games.json'
 with open(json_file_path, 'r') as file:
     data = json.load(file)
-    titles = pd.DataFrame({"id": range(len(data)), "title": [game["Game Title"] for game in data]})
-    descriptions = pd.DataFrame({"id": range(len(data)), "desc": [game["Game Description"] for game in data]})
+    titles = pd.DataFrame({"id": range(len(data)), "title": [game["title"] for game in data]})
+    descriptions = pd.DataFrame({
+        "id": range(len(data)),
+        "desc": [game.get("description", "").replace("\n", " ").strip() if isinstance(game.get("description"), str) else "" for game in data]
+    })
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -122,22 +127,26 @@ def json_search(query):
        
     #sort and return results 
     all_docs = sorted(cos_sim.keys(), key=cos_sim.get, reverse=True)
-    results = pd.DataFrame({
-        "cos_sim": [cos_sim[i] for i in all_docs],
-        "id": all_docs
-    })
-    
-    results = results.merge(titles, on="id").merge(descriptions, on="id")  
-    return results.to_json(orient='records')
+    results = [
+        {
+            "title": data[i]["title"],
+            "description": data[i].get("logline", "No description available"),
+            "rating": f'{data[i]["rating"]["aggregate_rating"]} ({data[i]["rating"]["rating_count"]} reviews)',
+            "score": round(cos_sim[i], 4)
+        }
+        for i in all_docs
+    ]
+    return jsonify(results)
 
-@app.route("/")
+@app.route('/')
 def home():
-    return render_template('base.html',title="sample html")
+    return render_template('base.html', title="Top Rated Games")
 
-@app.route("/episodes")
-def episodes_search():
+@app.route('/episodes')
+def get_games():
     text = request.args.get("title")
     return json_search(text)
 
+
 if 'DB_NAME' not in os.environ:
-    app.run(debug=True,host="0.0.0.0",port=5000)
+    app.run(debug=True,host="0.0.0.0",port=5001)
