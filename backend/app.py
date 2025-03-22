@@ -22,7 +22,7 @@ json_file_path = os.path.join(current_directory, 'top_rated_games.json')
 
 # Assuming your JSON data is stored in a file named 'games.json'
 with open(json_file_path, 'r') as file:
-    data = json.load(file)
+    data = json.load(file)["games"]
     titles = pd.DataFrame({"id": range(len(data)), "title": [game["title"] for game in data]})
     descriptions = pd.DataFrame({
         "id": range(len(data)),
