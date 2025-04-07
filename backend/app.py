@@ -9,6 +9,12 @@ from collections import Counter
 import numpy as np
 import math
 from nltk.tokenize import TreebankWordTokenizer
+from scipy.sparse.linalg import svds
+from sklearn.feature_extraction.text import TfidfVectorizer
+import matplotlib
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import normalize
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -23,118 +29,70 @@ json_file_path = os.path.join(current_directory, 'top_rated_games.json')
 # Assuming your JSON data is stored in a file named 'games.json'
 with open(json_file_path, 'r') as file:
     data = json.load(file)["games"]
-    titles = pd.DataFrame({"id": range(len(data)), "title": [game["title"] for game in data]})
-    descriptions = pd.DataFrame({
-        "id": range(len(data)),
-        "desc": [game.get("description", "").replace("\n", " ").strip() if isinstance(game.get("description"), str) else "" for game in data]
-    })
 
-
+def get_all_game_text(game):
+    tags = game.get("tags")
+    if tags == None:
+        tags = []
+    tags = " ".join(tags)
+    
+    recent_comments = game.get("recent_comments")
+    if recent_comments == None:
+        recent_comments = []
+    recent_comments = " ".join(recent_comments)
+    
+    old_comments = game.get("oldest_comments")
+    if old_comments == None:
+        old_comments = []
+    old_comments = " ".join(old_comments)
+    
+    logline = game.get("logline", "")
+    if logline == None:
+        logline = ""
+    
+    desc = game.get("description", "")
+    if desc == None:
+        desc = ""
+    
+    return (game.get("title", "") + " " + logline + " " + tags + " " + recent_comments + " " + old_comments + " " + desc).strip()
 
 app = Flask(__name__)
 CORS(app)
 
-def build_inverted_index(data):
-    tokenizer = TreebankWordTokenizer()
-    inverted_index = defaultdict(list)
-    
-    for row, info in data.iterrows():
-        game_id = info["id"]
-        game_desc = info["desc"]
-        game_title = info["title"]
-        words = tokenizer.tokenize(game_desc) #TODO processing for frequent words and typos?
-        words += tokenizer.tokenize(game_title)
-        words = [word.lower() for word in words]
-        
-        word_counts = Counter(words)
-    
-        for word, count in word_counts.items():
-            inverted_index[word].append((game_id, count))
-          
-    return inverted_index
- 
-def accumulate_dot_scores(query_word_counts, index, idf):
-    scores = dict()
-    for q in query_word_counts:
-        if q in idf:
-            weight_query = query_word_counts[q] * idf[q] #tf-idf of term in query
-            for doc in index[q]:
-                doc_num = doc[0]
-                weight_doc = doc[1] * idf[q] #tf-idx of term in doc
-                if doc_num not in scores:
-                    scores[doc_num] = 0
-                scores[doc_num] += weight_query * weight_doc
-    return scores
-
-def compute_idf(inv_idx, n_docs, min_df=10, max_df_ratio=0.95):
-    idf = dict()
-    for term in inv_idx:
-        df = len(inv_idx[term])
-        if df < min_df or df/n_docs > max_df_ratio: #filter out less/most frequent terms
-            continue
-        idf[term] = math.log2(n_docs/(1+df))
-    return idf
-
-def compute_doc_norms(index, idf, n_docs):
-    norms = np.zeros((n_docs,))
-    for term in index:
-        if term in idf:
-            idf_i = idf[term]
-            docs = index[term]
-            for doc in docs:
-                j = doc[0]
-                tf_ij = doc[1]
-                
-                norms[j] += (tf_ij * idf_i) ** 2
-    return np.sqrt(norms)
+def closest_games_to_query(docs_compressed_normed, query_vec_in):
+    sims = docs_compressed_normed.dot(query_vec_in)
+    asort = np.argsort(-sims)
+    return [(i, sims[i]) for i in asort]
 
 # Sample search using json with pandas
 def json_search(query):
-    tokenizer = TreebankWordTokenizer()
-    matches = []
- 
-    postings = build_inverted_index(descriptions.merge(titles, on="id"))
+    all_words = [get_all_game_text(game) for game in data]
+    vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .7, min_df = 1)
+    td_matrix = vectorizer.fit_transform(all_words)
     
-    query = query.lower()
-    q_tokens = tokenizer.tokenize(query) #TODO query processing for frequent words and typos?
+    docs_compressed, s, words_compressed = svds(td_matrix, k=200)
+    words_compressed = words_compressed.transpose()
     
-    query_word_count = dict()
-    for q in q_tokens:
-        if q not in query_word_count:
-            query_word_count[q] = 0
-        query_word_count[q] += 1
+    word_to_index = vectorizer.vocabulary_
+    index_to_word = {i:t for t,i in word_to_index.items()}
+
+    words_compressed_normed = normalize(words_compressed, axis = 1)
+    docs_compressed_normed = normalize(docs_compressed)
+
     
+    query_tfidf = vectorizer.transform([query]).toarray()
+    query_vec = normalize(np.dot(query_tfidf, words_compressed)).squeeze()
     
-    n_docs = len(titles)
-    idf = compute_idf(postings, n_docs, 1, 0.99)
-    doc_norms = compute_doc_norms(postings, idf, n_docs)
-    cos_sim = dict()
+    all_docs = closest_games_to_query(docs_compressed_normed, query_vec)
     
-    #query norm
-    q_norm = 0
-    for q in query_word_count:
-        if q in idf:
-            q_norm += (query_word_count[q] * idf[q]) ** 2
-    q_norm = np.sqrt(q_norm)
-    
-    #calculate similarities
-    scores = accumulate_dot_scores(query_word_count, postings, idf)
-    
-    for i in range(n_docs):
-        if q_norm == 0 or doc_norms[i] == 0 or i not in scores:
-            continue
-        cos_sim[i] = scores[i]/(q_norm * doc_norms[i])
-       
-    #sort and return results 
-    all_docs = sorted(cos_sim.keys(), key=cos_sim.get, reverse=True)
     results = [
         {
             "title": data[i]["title"],
-            "description": data[i].get("logline", "No description available"),
+            "description": data[i].get("logline") if data[i].get("logline") != None else "No description available",
             "rating": f'{data[i]["rating"]["aggregate_rating"]} ({data[i]["rating"]["rating_count"]} reviews)',
-            "score": round(cos_sim[i], 4)
+            "score": round(sim, 4)
         }
-        for i in all_docs
+        for i, sim in all_docs
     ]
     return jsonify(results)
 
