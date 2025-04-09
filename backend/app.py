@@ -15,6 +15,7 @@ import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize
+#from langdetect import detect
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -24,49 +25,37 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the path to the JSON file relative to the current script
-json_file_path = os.path.join(current_directory, 'top_rated_games.json')
+json_file_path = os.path.join(current_directory, 'merged_games_cleaned.json')
+
+def get_valid_text(x):
+    if x is not None:
+        if type(x) == list:
+            return " ".join(x)
+        else:
+            return x
+    #     try:
+    #         if detect(x) == "en":
+    #             return x
+    #     except:
+    #         return ""
+    return ""
+            
+        
+# all words relating to a game form the "document" corresponding to the game
+def get_all_game_text(game):
+    tags = get_valid_text(game.get("tags"))
+    recent_comments = get_valid_text(game.get("recent_comments"))
+    old_comments = get_valid_text(game.get("oldest_comments"))
+    logline = get_valid_text(game.get("logline"))
+    desc = get_valid_text(game.get("description"))
+    
+    return (game.get("title") + " " + logline + " " + tags + " " + recent_comments + " " + old_comments + " " + desc).strip()
 
 # Assuming your JSON data is stored in a file named 'games.json'
 with open(json_file_path, 'r') as file:
     data = json.load(file)["games"]
-
-def get_all_game_text(game):
-    tags = game.get("tags")
-    if tags == None:
-        tags = []
-    tags = " ".join(tags)
-    
-    recent_comments = game.get("recent_comments")
-    if recent_comments == None:
-        recent_comments = []
-    recent_comments = " ".join(recent_comments)
-    
-    old_comments = game.get("oldest_comments")
-    if old_comments == None:
-        old_comments = []
-    old_comments = " ".join(old_comments)
-    
-    logline = game.get("logline", "")
-    if logline == None:
-        logline = ""
-    
-    desc = game.get("description", "")
-    if desc == None:
-        desc = ""
-    
-    return (game.get("title", "") + " " + logline + " " + tags + " " + recent_comments + " " + old_comments + " " + desc).strip()
-
-app = Flask(__name__)
-CORS(app)
-
-def closest_games_to_query(docs_compressed_normed, query_vec_in):
-    sims = docs_compressed_normed.dot(query_vec_in)
-    asort = np.argsort(-sims)
-    return [(i, sims[i]) for i in asort]
-
-# Sample search using json with pandas
-def json_search(query):
     all_words = [get_all_game_text(game) for game in data]
+    
     vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .7, min_df = 1)
     td_matrix = vectorizer.fit_transform(all_words)
     
@@ -79,7 +68,17 @@ def json_search(query):
     words_compressed_normed = normalize(words_compressed, axis = 1)
     docs_compressed_normed = normalize(docs_compressed)
 
-    
+
+app = Flask(__name__)
+CORS(app)
+
+def closest_games_to_query(docs_compressed_normed, query_vec_in):
+    sims = docs_compressed_normed.dot(query_vec_in)
+    asort = np.argsort(-sims)
+    return [(i, sims[i]) for i in asort]
+
+# Sample search using json with pandas
+def json_search(query):
     query_tfidf = vectorizer.transform([query]).toarray()
     query_vec = normalize(np.dot(query_tfidf, words_compressed)).squeeze()
     
