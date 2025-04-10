@@ -3,7 +3,9 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+    rel="stylesheet">
+
 <body>
     <div class="full-body-container">
         <div class="top-text">
@@ -15,7 +17,7 @@
             </div>
             <div class="input-box" onclick="sendFocus()">
                 <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Search for a game" id="filter-text-val" onkeyup="filterText()">
+                <input placeholder="Search for a game" id="filter-text-val">
             </div>
         </div>
         <div id="answer-box">
@@ -24,8 +26,17 @@
     </div>
 
     <script>
+        const input = document.getElementById("filter-text-val");
 
-        function answerBoxTemplate(title, titleDesc, rating, score){
+        // Trigger function on Enter key
+        input.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent default form behavior
+                filterText();
+            }
+        });
+
+        function answerBoxTemplate(title, titleDesc, rating, score) {
             return `<div class=''>
                 <h3 class='episode-title'>${title}</h3>
                 <p class='episode-desc'>${titleDesc}</p>
@@ -35,23 +46,23 @@
         }
 
 
-        function sendFocus(){
+        function sendFocus() {
             document.getElementById('filter-text-val').focus()
         }
 
-        function filterText(){
+        function filterText() {
             document.getElementById("answer-box").innerHTML = ""
-            console.log(document.getElementById("filter-text-val").value)
+            console.log("filter log:" + document.getElementById("filter-text-val").value)
             fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
-            .then((response) => response.json())
-            .then((data) => data.forEach(row => {
-                
-                let tempDiv = document.createElement("div")
-                tempDiv.innerHTML = answerBoxTemplate(row.title, row.description, row.rating, row.score)
-                document.getElementById("answer-box").appendChild(tempDiv)
-            }));
+                .then((response) => response.json())
+                .then((data) => data.forEach(row => {
+
+                    let tempDiv = document.createElement("div")
+                    tempDiv.innerHTML = answerBoxTemplate(row.title, row.description, row.rating, row.score)
+                    document.getElementById("answer-box").appendChild(tempDiv)
+                }));
 
         }
-            
+
     </script>
 </body>
