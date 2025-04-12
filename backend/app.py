@@ -89,6 +89,7 @@ def json_search(query):
             "title": data[i]["title"],
             "description": data[i].get("logline") if data[i].get("logline") != None else "No description available",
             "rating": f'{data[i]["rating"]["aggregate_rating"]} ({data[i]["rating"]["rating_count"]} reviews)',
+            "tags": data[i]["tags"],
             "score": round(sim, 4)
         }
         for i, sim in all_docs
