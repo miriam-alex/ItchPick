@@ -25,7 +25,7 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the path to the JSON file relative to the current script
-json_file_path = os.path.join(current_directory, 'merged_games_cleaned.json')
+json_file_path = os.path.join(current_directory, 'merged_games_data_filtered.json')
 
 def get_valid_text(x):
     if x is not None:
@@ -52,7 +52,7 @@ def get_all_game_text(game):
     return (game.get("title") + " " + logline + " " + tags + " " + recent_comments + " " + old_comments + " " + desc).strip()
 
 # Assuming your JSON data is stored in a file named 'games.json'
-with open(json_file_path, 'r') as file:
+with open(json_file_path, 'r', encoding="utf-8") as file:
     data = json.load(file)["games"]
     all_words = [get_all_game_text(game) for game in data]
     
