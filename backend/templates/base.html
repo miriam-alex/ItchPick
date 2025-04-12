@@ -10,14 +10,16 @@
     <div class="full-body-container">
         <div class="top-text">
             <div class="google-colors">
-                <h1 id="google-4">4</h1>
-                <h1 id="google-3">3</h1>
-                <h1 id="google-0-1">0</h1>
-                <h1 id="google-0-2">0</h1>
+                <h1 id="google-0-2">itch picks!</h1>
             </div>
-            <div class="input-box" onclick="sendFocus()">
-                <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Search for a game" id="filter-text-val">
+            <div class="input">
+                <div class="input-box" onclick="sendFocus()">
+                    <img src="{{ url_for('static', filename='images/mag.png') }}" />
+                    <input placeholder="Search for a game" id="filter-text-val">
+                </div>
+                <select id="tag-dropdown" name="tags" multiple>
+                    <!-- Options will be dynamically added here -->
+                </select>
             </div>
         </div>
         <div id="answer-box">
@@ -25,44 +27,5 @@
         </div>
     </div>
 
-    <script>
-        const input = document.getElementById("filter-text-val");
-
-        // Trigger function on Enter key
-        input.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-                event.preventDefault(); // Prevent default form behavior
-                filterText();
-            }
-        });
-
-        function answerBoxTemplate(title, titleDesc, rating, score) {
-            return `<div class=''>
-                <h3 class='episode-title'>${title}</h3>
-                <p class='episode-desc'>${titleDesc}</p>
-                <p class='episode-rating'>Rating: ${rating}</p>
-                <p class='cosine-score'>Cosine Similarity: ${score}</p> 
-            </div>`
-        }
-
-
-        function sendFocus() {
-            document.getElementById('filter-text-val').focus()
-        }
-
-        function filterText() {
-            document.getElementById("answer-box").innerHTML = ""
-            console.log("filter log:" + document.getElementById("filter-text-val").value)
-            fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
-                .then((response) => response.json())
-                .then((data) => data.forEach(row => {
-
-                    let tempDiv = document.createElement("div")
-                    tempDiv.innerHTML = answerBoxTemplate(row.title, row.description, row.rating, row.score)
-                    document.getElementById("answer-box").appendChild(tempDiv)
-                }));
-
-        }
-
-    </script>
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 </body>
