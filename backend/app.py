@@ -26,6 +26,7 @@ current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the path to the JSON file relative to the current script
 json_file_path = os.path.join(current_directory, 'merged_games_data_filtered.json')
+ui_json_file_path = os.path.join(current_directory, 'merged_partial_cleaned.json')
 
 def get_valid_text(x):
     if x is not None:
@@ -51,22 +52,27 @@ def get_all_game_text(game):
     
     return (game.get("title") + " " + logline + " " + tags + " " + recent_comments + " " + old_comments + " " + desc).strip()
 
-# Assuming your JSON data is stored in a file named 'games.json'
+#json file processing
 with open(json_file_path, 'r', encoding="utf-8") as file:
     data = json.load(file)["games"]
-    all_words = [get_all_game_text(game) for game in data]
-    
-    vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .7, min_df = 1)
-    td_matrix = vectorizer.fit_transform(all_words)
-    
-    docs_compressed, s, words_compressed = svds(td_matrix, k=200)
-    words_compressed = words_compressed.transpose()
-    
-    word_to_index = vectorizer.vocabulary_
-    index_to_word = {i:t for t,i in word_to_index.items()}
 
-    words_compressed_normed = normalize(words_compressed, axis = 1)
-    docs_compressed_normed = normalize(docs_compressed)
+with open(ui_json_file_path, 'r', encoding="utf-8") as file:
+    UI_data = json.load(file)["games"]
+
+
+all_words = [get_all_game_text(game) for game in data]
+    
+vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .7, min_df = 1)
+td_matrix = vectorizer.fit_transform(all_words)
+    
+docs_compressed, s, words_compressed = svds(td_matrix, k=200)
+words_compressed = words_compressed.transpose()
+    
+word_to_index = vectorizer.vocabulary_
+index_to_word = {i:t for t,i in word_to_index.items()}
+
+words_compressed_normed = normalize(words_compressed, axis = 1)
+docs_compressed_normed = normalize(docs_compressed)
 
 
 app = Flask(__name__)
@@ -87,7 +93,7 @@ def json_search(query):
     results = [
         {
             "title": data[i]["title"],
-            "description": data[i].get("logline") if data[i].get("logline") != None else "No description available",
+            "description": UI_data[i].get("logline") if UI_data[i].get("logline") != None else "No description available",
             "rating": f'{data[i]["rating"]["aggregate_rating"]} ({data[i]["rating"]["rating_count"]} reviews)',
             "tags": data[i]["tags"],
             "score": round(sim, 4)
