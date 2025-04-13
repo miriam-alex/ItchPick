@@ -44,13 +44,13 @@ def get_valid_text(x):
         
 # all words relating to a game form the "document" corresponding to the game
 def get_all_game_text(game):
-    tags = get_valid_text(game.get("tags"))
-    recent_comments = get_valid_text(game.get("recent_comments"))
-    old_comments = get_valid_text(game.get("oldest_comments"))
-    logline = get_valid_text(game.get("logline"))
-    desc = get_valid_text(game.get("description"))
-    
-    return (game.get("title") + " " + logline + " " + tags + " " + recent_comments + " " + old_comments + " " + desc).strip()
+    weighted_text = f"{game['title']} " * 3
+    weighted_text += f"{get_valid_text(game.get('logline'))} "
+    weighted_text += f"{get_valid_text(game.get('description'))} " * 2
+    weighted_text += f"{get_valid_text(game.get('tags'))} " * 2
+    weighted_text += f"{get_valid_text(game.get('recent_comments'))} "
+    weighted_text += f"{get_valid_text(game.get('oldest_comments'))} "
+    return weighted_text.strip()
 
 #json file processing
 with open(json_file_path, 'r', encoding="utf-8") as file:
@@ -88,7 +88,18 @@ def json_search(query):
     query_tfidf = vectorizer.transform([query]).toarray()
     query_vec = normalize(np.dot(query_tfidf, words_compressed)).squeeze()
     
-    all_docs = closest_games_to_query(docs_compressed_normed, query_vec)
+    raw_results = closest_games_to_query(docs_compressed_normed, query_vec)
+    boosted_results = []
+
+    for i, sim in raw_results:
+        rating_data = data[i].get("rating", {})
+        rating = rating_data.get("aggregate_rating", 0)
+        count = rating_data.get("rating_count", 0)
+        boost = math.log(1 + count) * rating if rating and count else 1
+        final_score = sim * boost
+        boosted_results.append((i, final_score))
+
+    boosted_results.sort(key=lambda x: -x[1])
     
     results = [
         {
@@ -96,9 +107,9 @@ def json_search(query):
             "description": UI_data[i].get("logline") if UI_data[i].get("logline") != None else "No description available",
             "rating": f'{data[i]["rating"]["aggregate_rating"]} ({data[i]["rating"]["rating_count"]} reviews)',
             "tags": data[i]["tags"],
-            "score": round(sim, 4)
+            "score": round(score, 4)
         }
-        for i, sim in all_docs
+        for i, score in boosted_results
     ]
     return jsonify(results)
 
