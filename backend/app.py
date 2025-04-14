@@ -59,7 +59,7 @@ with open(json_file_path, 'r', encoding="utf-8") as file:
     data = json.load(file)["games"]
 
 with open(ui_json_file_path, 'r', encoding="utf-8") as file:
-    UI_data = json.load(file)["games"]
+    ui_data = json.load(file)["games"]
 
 
 all_words = [get_all_game_text(game) for game in data]
@@ -106,9 +106,12 @@ def json_search(query):
     results = [
         {
             "title": data[i]["title"],
-            "description": UI_data[i].get("logline") if UI_data[i].get("logline") != None else "No description available",
-            "rating": f'{data[i]["rating"]["aggregate_rating"]} ({data[i]["rating"]["rating_count"]} reviews)',
+            "description": ui_data[i].get("logline") if ui_data[i].get("logline") != None else "No description available",
+            "rating": data[i]["rating"]["aggregate_rating"],
+            "rating_count": data[i]["rating"]["rating_count"],
             "tags": data[i]["tags"],
+            "url": data[i]["url"],
+            "image_url": data[i]["image"] if "image" in data[i] else None,
             "score": round(score, 4)
         }
         for i, score in boosted_results

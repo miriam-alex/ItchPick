@@ -1,26 +1,64 @@
 // DYNAMICALLY GENERATING THE TAG DROPDOWN
 
-const tagList = ["Free", "Visual Novel", "Simulation", "Rhythm", "Puzzle"];
+const availableTags = ["Visual Novel", "Simulation", "Rhythm", "Puzzle"];
 
-const dropdown = document.getElementById("tag-dropdown");
+const selectedTags = new Set();
 
-// placeholder option
-const defaultOption = document.createElement("option");
-defaultOption.value = "";
-defaultOption.disabled = true;
-defaultOption.selected = true;
-defaultOption.textContent = "Select tag(s)";
-dropdown.appendChild(defaultOption);
+const dropdown = document.getElementById("tagDropdown");
+const tagsContainer = document.getElementById("tagsContainer");
 
-tagList.forEach(function (tag) {
-  const option = document.createElement("option");
-  option.value = tag;
-  option.textContent = tag;
-  dropdown.appendChild(option);
-});
+function populateDropdown() {
+  dropdown.innerHTML = '<option disabled selected>+ Add a tag</option>';
+  availableTags.forEach(tag => {
+    if (!selectedTags.has(tag)) {
+      const option = document.createElement("option");
+      option.value = tag;
+      option.textContent = tag;
+      dropdown.appendChild(option);
+    }
+  });
 
+  if (dropdown.options.length === 1) {
+    dropdown.style.display = 'none';
+  } else {
+    dropdown.disabled = false;
+  }
+}
+
+function addSelectedTag(selectElement) {
+  const tagText = selectElement.value;
+
+  if (!tagText || selectedTags.has(tagText)){
+    return;
+  }
+
+  const tagEl = document.createElement("span");
+  tagEl.className = "tag";
+  tagEl.innerHTML = `${tagText} <button class="remove-tag" onclick="removeTag(this)">×</button>`;
+
+  tagsContainer.insertBefore(tagEl, dropdown);
+  selectedTags.add(tagText);
+  populateDropdown();
+
+  console.log("added tag " + tagText)
+  console.log(selectedTags)
+}
+
+function removeTag(button) {
+  const tagEl = button.parentElement;
+  // Slice is to get rid of the x and then trimming for any extra whitespace
+  const tagText = tagEl.textContent.slice(0, -2).trim();
+  console.log(tagText)
+  selectedTags.delete(tagText);
+  tagEl.remove();
+  console.log(selectedTags)
+  populateDropdown();
+}
+
+populateDropdown(); // Initial fill
 
 // TRIGGERING SEARCH ON KEYPRESS
+
 const input = document.getElementById("filter-text-val");
 
 // Trigger function on Enter key
@@ -34,33 +72,51 @@ input.addEventListener("keydown", function (event) {
 
 // GENERATING RESULTS (from class)
 
-function answerBoxTemplate(title, titleDesc, rating, score) {
-  return `<div class=''>
-        <h3 class='episode-title'>${title}</h3>
-        <p class='episode-desc'>${titleDesc}</p>
-        <p class='episode-rating'>Rating: ${rating}</p>
-        <p class='cosine-score'>Cosine Similarity: ${score}</p> 
-    </div>`
+// function answerBoxTemplate(title, titleDesc, rating, score) {
+//   return `<div class=''>
+//         <h3 class='episode-title'>${title}</h3>
+//         <p class='episode-desc'>${titleDesc}</p>
+//         <p class='episode-rating'>Rating: ${rating}</p>
+//         <p class='cosine-score'>Cosine Similarity: ${score}</p> 
+//     </div>`
+// }
+
+function galleryItemTemplate(title, url, image_url, description, rating, rating_count, score) {
+  rating_string = (rating == null || rating_count < 5) ? "" : rating.toString()
+  return `<div class="gallery-item">
+      <a href="${url}" target="_blank" rel="noopener noreferrer">
+        <img src="${image_url}" alt="Thumbnail of ${title}">
+        <div class="overlay">
+          ${title} (${rating}): ${description}
+        </div>
+      </a>
+  </div>`
 }
 
 function sendFocus() {
   document.getElementById('filter-text-val').focus()
 }
 
+function setsOverlap(set1, set2) {
+  return [...set1].some(element => set2.has(element));
+}
+
 function filterText() {
-  document.getElementById("answer-box").innerHTML = ""
-  selectedTagString = document.getElementById("tag-dropdown").value
+  document.getElementById("gallery").innerHTML = ""
   console.log("------------------------------------------")
   console.log("query: " + document.getElementById("filter-text-val").value)
-  console.log("tag: " + document.getElementById("tag-dropdown").value)
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {
-      if (selectedTagString == "" || row.tags.includes(selectedTagString)) {
-        console.log(row.tags)
+      var rowTagSet = new Set(row.tags)
+      if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
         tempDiv = document.createElement("div")
-        tempDiv.innerHTML = answerBoxTemplate(row.title, row.description, row.rating, row.score)
-        document.getElementById("answer-box").appendChild(tempDiv)
+        console.log(row)
+        if (row.image_url == null) {
+          row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
+        }
+        tempDiv.innerHTML = galleryItemTemplate(row.title, row.url, row.image_url, row.description, row.rating, row.rating_count, row.score)
+        document.getElementById("gallery").appendChild(tempDiv)
       }
     }));
 

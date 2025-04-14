@@ -3,29 +3,27 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+<link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&family=Open+Sans:wght@500&display=swap"
     rel="stylesheet">
 
 <body>
-    <div class="full-body-container">
-        <div class="top-text">
-            <div class="google-colors">
-                <h1 id="google-0-2">itch picks</h1>
+    <div class="top-text">
+        <div class="title">
+            <h1 id="itch-picks-title">ItchPick</h1>
+        </div>
+        <div class="input">
+            <div class="input-box" onclick="sendFocus()">
+                <img src="{{ url_for('static', filename='images/mag.png') }}" />
+                <input placeholder="Search for a game" id="filter-text-val">
             </div>
-            <div class="input">
-                <div class="input-box" onclick="sendFocus()">
-                    <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                    <input placeholder="Search for a game" id="filter-text-val">
-                </div>
-                <select id="tag-dropdown" name="tags" multiple>
-                    <!-- Options will be dynamically added here -->
+            <div class="tags-container" id="tagsContainer">
+                <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
+                    <option disabled selected>+ Add Tag</option>
                 </select>
             </div>
         </div>
-        <div id="answer-box">
-
-        </div>
     </div>
-
+    <div class="gallery" id="gallery">
+    </div>
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 </body>
