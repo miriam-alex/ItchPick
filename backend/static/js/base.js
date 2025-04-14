@@ -19,9 +19,10 @@ function populateDropdown() {
   });
 
   if (dropdown.options.length === 1) {
-    dropdown.style.display = 'none';
+    dropdown.style.visibility = "hidden";
   } else {
     dropdown.disabled = false;
+    dropdown.style.visibility = "visible"
   }
 }
 
