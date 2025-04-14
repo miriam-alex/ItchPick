@@ -81,10 +81,15 @@ input.addEventListener("keydown", function (event) {
 //     </div>`
 // }
 
-function galleryItemTemplate(title, image_url, description, rating, score) {
+function galleryItemTemplate(title, url, image_url, description, rating, rating_count, score) {
+  rating_string = (rating == null || rating_count < 5) ? "" : rating.toString()
   return `<div class="gallery-item">
-      <img src="${image_url}" alt="Thumbnail of ${title}">
-      <div class="overlay">${title}</div>
+      <a href="${url}" target="_blank" rel="noopener noreferrer">
+        <img src="${image_url}" alt="Thumbnail of ${title}">
+        <div class="overlay">
+          ${title} (${rating}): ${description}
+        </div>
+      </a>
   </div>`
 }
 
@@ -110,7 +115,7 @@ function filterText() {
         if (row.image_url == null) {
           row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
         }
-        tempDiv.innerHTML = galleryItemTemplate(row.title, row.image_url, row.description, row.rating, row.score)
+        tempDiv.innerHTML = galleryItemTemplate(row.title, row.url, row.image_url, row.description, row.rating, row.rating_count, row.score)
         document.getElementById("gallery").appendChild(tempDiv)
       }
     }));

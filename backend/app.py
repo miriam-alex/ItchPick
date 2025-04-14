@@ -105,8 +105,10 @@ def json_search(query):
         {
             "title": data[i]["title"],
             "description": ui_data[i].get("logline") if ui_data[i].get("logline") != None else "No description available",
-            "rating": f'{data[i]["rating"]["aggregate_rating"]} ({data[i]["rating"]["rating_count"]} reviews)',
+            "rating": data[i]["rating"]["aggregate_rating"],
+            "rating_count": data[i]["rating"]["rating_count"],
             "tags": data[i]["tags"],
+            "url": data[i]["url"],
             "image_url": data[i]["image"] if "image" in data[i] else None,
             "score": round(score, 4)
         }
