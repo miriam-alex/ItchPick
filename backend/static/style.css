@@ -3,14 +3,20 @@
     src: url('./franxurter-totally-font/FranxurterTotallyMedium-gxwjp.ttf') format('truetype');
 }
 
+* {
+    font-family: 'Lato', sans-serif;
+  }
+
 :root {
-    --background-color: #a2c9f1;
+    --background-color: #2f4858;
+    --tag-background-color: #6b5992;
+    --tag-color: white;
+    --tag-dropdown-background-color: #D95183;
+    --tag-dropdown-color: white;
 }
 
 
 html {
-    font-family: 'Gothic A1', sans-serif;
-    color: rgb(0, 0, 0);
     background-color: var(--background-color);
 }
 
@@ -33,18 +39,19 @@ body {
     display: flex;
     align-items: center;
     font-size: 48px;
-    font-family: 'TotallyFont';
     letter-spacing: 4px;
+    color:#fa5c5c;
 }
 
 .title h1 {
     margin-bottom: 0;
     margin-right: 3px;
+    font-family: 'TotallyFont';
 }
 
 .input-box {
     border-radius: 50px;
-    border: 1px solid black;
+    border: 1px solid white;
     display: flex;
     align-items: center;
     margin-top: 10px;
@@ -55,6 +62,16 @@ body {
 .input-box img {
     height: 20px;
     width: 20px;
+}
+
+.input-box input {
+    width: 100%;
+    margin-left: 10px;
+    font-size: 16px;
+    border: none;
+    outline: 0;
+    background-color: var(--background-color);
+    color: white;
 }
 
 .input {
@@ -68,15 +85,6 @@ body {
     align-items: center;
 }
 
-.input-box input {
-    width: 100%;
-    margin-left: 10px;
-    font-size: 16px;
-    border: none;
-    outline: 0;
-    background-color: var(--background-color);
-}
-
 #answer-box {
     width: 700px;
     margin-top: 50px;
@@ -86,9 +94,10 @@ body {
 
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
     margin-top: 50px;
+    width: 90%;
 }
 
 .gallery-item {
@@ -142,8 +151,8 @@ body {
 }
 
 .tag {
-    background-color: #e0e0e0;
-    color: #333;
+    background-color: var(--tag-background-color);
+    color: var(--tag-color);
     padding: 6px 12px;
     border-radius: 20px;
     display: flex;
@@ -157,7 +166,7 @@ body {
     border: none;
     font-weight: bold;
     cursor: pointer;
-    color: #666;
+    color: var(--tag-dropdown-color);
 }
 
 .tag .remove-tag:hover {
@@ -167,8 +176,8 @@ body {
 .tag-dropdown {
     appearance: none;
     border: 1px dashed #1c7ed6;
-    background-color: #d0ebff;
-    color: #1c7ed6;
+    background-color: var(--tag-dropdown-background-color);
+    color: var(--tag-dropdown-color);
     border-radius: 20px;
     padding: 6px 12px;
     font-size: 14px;

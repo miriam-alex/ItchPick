@@ -72,13 +72,20 @@ input.addEventListener("keydown", function (event) {
 
 // GENERATING RESULTS (from class)
 
-function answerBoxTemplate(title, titleDesc, rating, score) {
-  return `<div class=''>
-        <h3 class='episode-title'>${title}</h3>
-        <p class='episode-desc'>${titleDesc}</p>
-        <p class='episode-rating'>Rating: ${rating}</p>
-        <p class='cosine-score'>Cosine Similarity: ${score}</p> 
-    </div>`
+// function answerBoxTemplate(title, titleDesc, rating, score) {
+//   return `<div class=''>
+//         <h3 class='episode-title'>${title}</h3>
+//         <p class='episode-desc'>${titleDesc}</p>
+//         <p class='episode-rating'>Rating: ${rating}</p>
+//         <p class='cosine-score'>Cosine Similarity: ${score}</p> 
+//     </div>`
+// }
+
+function galleryItemTemplate(title, image_url, description, rating, score) {
+  return `<div class="gallery-item">
+      <img src="${image_url}" alt="Thumbnail of ${title}">
+      <div class="overlay">${title}</div>
+  </div>`
 }
 
 function sendFocus() {
@@ -90,7 +97,7 @@ function setsOverlap(set1, set2) {
 }
 
 function filterText() {
-  document.getElementById("answer-box").innerHTML = ""
+  document.getElementById("gallery").innerHTML = ""
   console.log("------------------------------------------")
   console.log("query: " + document.getElementById("filter-text-val").value)
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
@@ -99,10 +106,12 @@ function filterText() {
       var rowTagSet = new Set(row.tags)
       if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
         tempDiv = document.createElement("div")
-        console.log(row.title + " has the following tags")
-        console.log(rowTagSet)
-        tempDiv.innerHTML = answerBoxTemplate(row.title, row.description, row.rating, row.score)
-        document.getElementById("answer-box").appendChild(tempDiv)
+        console.log(row)
+        if (row.image_url == null) {
+          row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
+        }
+        tempDiv.innerHTML = galleryItemTemplate(row.title, row.image_url, row.description, row.rating, row.score)
+        document.getElementById("gallery").appendChild(tempDiv)
       }
     }));
 

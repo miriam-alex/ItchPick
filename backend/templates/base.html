@@ -3,48 +3,27 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gothic A1&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+<link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&family=Open+Sans:wght@500&display=swap"
     rel="stylesheet">
 
 <body>
-    <div class="full-body-container">
-        <div class="top-text">
-            <div class="title">
-                <h1 id="itch-picks-title">ItchPick</h1>
+    <div class="top-text">
+        <div class="title">
+            <h1 id="itch-picks-title">ItchPick</h1>
+        </div>
+        <div class="input">
+            <div class="input-box" onclick="sendFocus()">
+                <img src="{{ url_for('static', filename='images/mag.png') }}" />
+                <input placeholder="Search for a game" id="filter-text-val">
             </div>
-            <div class="input">
-                <div class="input-box" onclick="sendFocus()">
-                    <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                    <input placeholder="Search for a game" id="filter-text-val">
-                </div>
-                <div class="tags-container" id="tagsContainer">
-                    <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
-                        <option disabled selected>+ Add Tag</option>
-                    </select>
-                </div>
+            <div class="tags-container" id="tagsContainer">
+                <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
+                    <option disabled selected>+ Add Tag</option>
+                </select>
             </div>
         </div>
-        <div class="gallery">
-            <div class="gallery-item">
-                <img src="https://img.itch.zone/aW1nLzcwMTIxNDMucG5n/315x250%23c/BalGQb.png" alt="Nature">
-                <div class="overlay">Beautiful Nature</div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://img.itch.zone/aW1nLzkyODQ0MDYucG5n/315x250%23c/GYujop.png" alt="City">
-                <div class="overlay">Urban Life</div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://img.itch.zone/aW1nLzI3NjQ4NjUucG5n/315x250%23c/DZfV4W.png" alt="Ocean">
-                <div class="overlay">Ocean Breeze</div>
-            </div>
-            <div class="gallery-item">
-                <img src="https://img.itch.zone/aW1nLzc2OTc0OTEucG5n/315x250%23c/b%2FgqIz.png" alt="Forest">
-                <div class="overlay">Misty Forest</div>
-            </div>
-            <div id="answer-box">
-
-            </div>
-        </div>
-
-        <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    </div>
+    <div class="gallery" id="gallery">
+    </div>
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 </body>
