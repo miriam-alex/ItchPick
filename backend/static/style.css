@@ -7,11 +7,13 @@
     font-family: 'Lato', sans-serif;
   }
 
+
 :root {
+    --title-color: #fa5c5c;
     --background-color: #2f4858;
-    --tag-background-color: #6b5992;
+    --tag-background-color: #D95183 ;
     --tag-color: white;
-    --tag-dropdown-background-color: #D95183;
+    --tag-dropdown-background-color:#6b5992;
     --tag-dropdown-color: white;
 }
 
@@ -40,7 +42,7 @@ body {
     align-items: center;
     font-size: 48px;
     letter-spacing: 4px;
-    color:#fa5c5c;
+    color:var(--title-color);
 }
 
 .title h1 {
@@ -148,6 +150,7 @@ body {
     gap: 10px;
     align-items: center;
     margin-top: 10px;
+    width: 650px
 }
 
 .tag {
@@ -157,7 +160,7 @@ body {
     border-radius: 20px;
     display: flex;
     align-items: center;
-    font-size: 14px;
+    font-size: 14px;      
 }
 
 .tag .remove-tag {
@@ -165,7 +168,6 @@ body {
     background: none;
     border: none;
     font-weight: bold;
-    cursor: pointer;
     color: var(--tag-dropdown-color);
 }
 
@@ -181,7 +183,8 @@ body {
     border-radius: 20px;
     padding: 6px 12px;
     font-size: 14px;
-    cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
 .tag-dropdown option:disabled {

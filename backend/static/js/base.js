@@ -1,6 +1,13 @@
 // DYNAMICALLY GENERATING THE TAG DROPDOWN
 
-const availableTags = ["Visual Novel", "Simulation", "Rhythm", "Puzzle"];
+/*
+Counter({'Games': 2225, 'Free': 1981, 'Visual Novel': 352, 'Adventure': 268, 'Action': 194, 'Featured': 188, 
+'Platformer': 177, 'Puzzle': 177, 'Interactive Fiction': 151, '$5 or less': 135, 'Simulation': 124, 'Role Playing': 70, 
+'$15 or less': 68, 'Shooter': 67, 'Survival': 62, 'Strategy': 61, 'Educational': 32, 'Card Game': 30, 'Rhythm': 22, 
+'Fighting': 21, 'Racing': 16, 'Sports': 13, 'On sale': 4})
+*/
+
+const availableTags = ["Visual Novel", "Adventure", "Action", "Featured", "Platformer", "Puzzle", "Simulation", "Role Playing", "Shooter", "Survival", "Strategy", "Educational", "Card Game", "Rhythm", "Fighting", "Racing", "Sports"];
 
 const selectedTags = new Set();
 
@@ -35,7 +42,7 @@ function addSelectedTag(selectElement) {
 
   const tagEl = document.createElement("span");
   tagEl.className = "tag";
-  tagEl.innerHTML = `${tagText} <button class="remove-tag" onclick="removeTag(this)">×</button>`;
+  tagEl.innerHTML = `${tagText}<button class="remove-tag" onclick="removeTag(this)">×</button>`;
 
   tagsContainer.insertBefore(tagEl, dropdown);
   selectedTags.add(tagText);
