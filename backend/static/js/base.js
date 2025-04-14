@@ -1,6 +1,6 @@
 // DYNAMICALLY GENERATING THE TAG DROPDOWN
 
-const availableTags = ["Free", "Visual Novel", "Simulation", "Rhythm", "Puzzle"];
+const availableTags = ["Visual Novel", "Simulation", "Rhythm", "Puzzle"];
 
 const selectedTags = new Set();
 
@@ -46,7 +46,7 @@ function addSelectedTag(selectElement) {
 
 function removeTag(button) {
   const tagEl = button.parentElement;
-  // slice is to get rid of the x
+  // Slice is to get rid of the x and then trimming for any extra whitespace
   const tagText = tagEl.textContent.slice(0, -2).trim();
   console.log(tagText)
   selectedTags.delete(tagText);
@@ -58,6 +58,7 @@ function removeTag(button) {
 populateDropdown(); // Initial fill
 
 // TRIGGERING SEARCH ON KEYPRESS
+
 const input = document.getElementById("filter-text-val");
 
 // Trigger function on Enter key
@@ -84,18 +85,22 @@ function sendFocus() {
   document.getElementById('filter-text-val').focus()
 }
 
+function setsOverlap(set1, set2) {
+  return [...set1].some(element => set2.has(element));
+}
+
 function filterText() {
   document.getElementById("answer-box").innerHTML = ""
-  selectedTagString = document.getElementById("tag-dropdown").value
   console.log("------------------------------------------")
   console.log("query: " + document.getElementById("filter-text-val").value)
-  console.log("tag: " + document.getElementById("tag-dropdown").value)
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {
-      if (selectedTagString == "" || row.tags.includes(selectedTagString)) {
-        console.log(row.tags)
+      var rowTagSet = new Set(row.tags)
+      if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
         tempDiv = document.createElement("div")
+        console.log(row.title + " has the following tags")
+        console.log(rowTagSet)
         tempDiv.innerHTML = answerBoxTemplate(row.title, row.description, row.rating, row.score)
         document.getElementById("answer-box").appendChild(tempDiv)
       }
