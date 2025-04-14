@@ -15,7 +15,6 @@ import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize
-#from langdetect import detect
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -25,15 +24,18 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the path to the JSON file relative to the current script
-json_file_path = os.path.join(current_directory, 'merged_games_data_filtered.json')
-ui_json_file_path = os.path.join(current_directory, 'merged_partial_cleaned.json')
+json_file_path = os.path.join(current_directory, 'data_games_cleaned.json')
+ui_json_file_path = os.path.join(current_directory, 'ui_games_cleaned.json')
 
 def get_valid_text(x):
     if x is not None:
-        if type(x) == list:
-            return " ".join(x)
+        if isinstance(x, list):
+            if all(isinstance(i, (list, tuple)) and len(i) == 2 for i in x):
+                return " ".join([str(comment[0]) for comment in x])
+            else:
+                return " ".join(map(str, x))
         else:
-            return x
+            return str(x)
     #     try:
     #         if detect(x) == "en":
     #             return x
