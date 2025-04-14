@@ -44,11 +44,11 @@ def get_valid_text(x):
         
 # all words relating to a game form the "document" corresponding to the game
 def get_all_game_text(game):
-    weighted_text = f"{game['title']} " * 3
-    weighted_text += f"{get_valid_text(game.get('logline'))} "
-    weighted_text += f"{get_valid_text(game.get('description'))} " * 2
-    weighted_text += f"{get_valid_text(game.get('tags'))} " * 2
-    weighted_text += f"{get_valid_text(game.get('recent_comments'))} "
+    weighted_text = f"{game['title']} " * 50
+    weighted_text += f"{get_valid_text(game.get('logline'))} " * 50
+    weighted_text += f"{get_valid_text(game.get('description'))} " * 30
+    weighted_text += f"{get_valid_text(game.get('tags'))} " * 50
+    weighted_text += f"{get_valid_text(game.get('recent_comments'))} " 
     weighted_text += f"{get_valid_text(game.get('oldest_comments'))} "
     return weighted_text.strip()
 
