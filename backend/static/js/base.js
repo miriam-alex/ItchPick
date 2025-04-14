@@ -1,24 +1,61 @@
 // DYNAMICALLY GENERATING THE TAG DROPDOWN
 
-const tagList = ["Free", "Visual Novel", "Simulation", "Rhythm", "Puzzle"];
+const availableTags = ["Free", "Visual Novel", "Simulation", "Rhythm", "Puzzle"];
 
-const dropdown = document.getElementById("tag-dropdown");
+const selectedTags = new Set();
 
-// placeholder option
-const defaultOption = document.createElement("option");
-defaultOption.value = "";
-defaultOption.disabled = true;
-defaultOption.selected = true;
-defaultOption.textContent = "Select tag(s)";
-dropdown.appendChild(defaultOption);
+const dropdown = document.getElementById("tagDropdown");
+const tagsContainer = document.getElementById("tagsContainer");
 
-tagList.forEach(function (tag) {
-  const option = document.createElement("option");
-  option.value = tag;
-  option.textContent = tag;
-  dropdown.appendChild(option);
-});
+function populateDropdown() {
+  dropdown.innerHTML = '<option disabled selected>+ Add a tag</option>';
+  availableTags.forEach(tag => {
+    if (!selectedTags.has(tag)) {
+      const option = document.createElement("option");
+      option.value = tag;
+      option.textContent = tag;
+      dropdown.appendChild(option);
+    }
+  });
 
+  if (dropdown.options.length === 1) {
+    dropdown.style.display = 'none';
+  } else {
+    dropdown.disabled = false;
+  }
+}
+
+function addSelectedTag(selectElement) {
+  const tagText = selectElement.value;
+
+  if (!tagText || selectedTags.has(tagText)){
+    return;
+  }
+
+  const tagEl = document.createElement("span");
+  tagEl.className = "tag";
+  tagEl.innerHTML = `${tagText} <button class="remove-tag" onclick="removeTag(this)">×</button>`;
+
+  tagsContainer.insertBefore(tagEl, dropdown);
+  selectedTags.add(tagText);
+  populateDropdown();
+
+  console.log("added tag " + tagText)
+  console.log(selectedTags)
+}
+
+function removeTag(button) {
+  const tagEl = button.parentElement;
+  // slice is to get rid of the x
+  const tagText = tagEl.textContent.slice(0, -2).trim();
+  console.log(tagText)
+  selectedTags.delete(tagText);
+  tagEl.remove();
+  console.log(selectedTags)
+  populateDropdown();
+}
+
+populateDropdown(); // Initial fill
 
 // TRIGGERING SEARCH ON KEYPRESS
 const input = document.getElementById("filter-text-val");
