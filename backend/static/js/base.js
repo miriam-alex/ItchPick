@@ -80,22 +80,25 @@ input.addEventListener("keydown", function (event) {
 
 // GENERATING RESULTS (from class)
 
-// function answerBoxTemplate(title, titleDesc, rating, score) {
-//   return `<div class=''>
-//         <h3 class='episode-title'>${title}</h3>
-//         <p class='episode-desc'>${titleDesc}</p>
-//         <p class='episode-rating'>Rating: ${rating}</p>
-//         <p class='cosine-score'>Cosine Similarity: ${score}</p> 
-//     </div>`
-// }
 
-function galleryItemTemplate(title, url, image_url, description, rating, rating_count, score) {
+function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags) {
   rating_string = (rating == null || rating_count < 5) ? "" : rating.toString()
+
+  spanContents = ""
+
+  tags.forEach(element => {
+    const tagEl = `<span class=tag> ${element} </span>`
+    spanContents += tagEl + " "
+  });
+
   return `<div class="gallery-item">
       <a href="${url}" target="_blank" rel="noopener noreferrer">
         <img src="${image_url}" alt="Thumbnail of ${title}">
         <div class="overlay">
-          ${title} (${rating}): ${description}
+          <b> ${title} (${rating}★): </b>  ${description} 
+          <span class="tag-span">
+          ${spanContents}
+          </span>
         </div>
       </a>
   </div>`
@@ -119,11 +122,11 @@ function filterText() {
       var rowTagSet = new Set(row.tags)
       if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
         tempDiv = document.createElement("div")
-        console.log(row)
+        // console.log(row)
         if (row.image_url == null) {
           row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
         }
-        tempDiv.innerHTML = galleryItemTemplate(row.title, row.url, row.image_url, row.description, row.rating, row.rating_count, row.score)
+        tempDiv.innerHTML = galleryItemTemplate(row.title, row.url, row.image_url, row.description, row.rating, row.rating_count, row.tags)
         document.getElementById("gallery").appendChild(tempDiv)
       }
     }));

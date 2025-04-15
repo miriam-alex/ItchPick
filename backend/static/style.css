@@ -129,6 +129,7 @@ body {
     background: rgba(14, 19, 103, 0.6);
     color: #fff;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     font-size: 1em;
@@ -137,6 +138,7 @@ body {
     text-align: center;
     padding: 20px;
 }
+
 
 .gallery-item:hover .overlay {
     opacity: 1;
@@ -161,6 +163,13 @@ body {
     display: flex;
     align-items: center;
     font-size: 14px;      
+}
+
+.tag-span {
+    display: flex;
+    flex-direction: row;
+    margin-top: 10px;
+    gap: 5px;
 }
 
 .tag .remove-tag {
