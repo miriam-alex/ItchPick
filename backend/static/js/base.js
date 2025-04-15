@@ -36,7 +36,7 @@ function populateDropdown() {
 function addSelectedTag(selectElement) {
   const tagText = selectElement.value;
 
-  if (!tagText || selectedTags.has(tagText)){
+  if (!tagText || selectedTags.has(tagText)) {
     return;
   }
 
@@ -55,7 +55,7 @@ function addSelectedTag(selectElement) {
 function removeTag(button) {
   const tagEl = button.parentElement;
   // Slice is to get rid of the x and then trimming for any extra whitespace
-  const tagText = tagEl.textContent.slice(0, -2).trim();
+  const tagText = tagEl.textContent.slice(0, -1).trim();
   console.log(tagText)
   selectedTags.delete(tagText);
   tagEl.remove();
@@ -112,23 +112,30 @@ function setsOverlap(set1, set2) {
   return [...set1].some(element => set2.has(element));
 }
 
+function filterTextHelper(row) {
+  var rowTagSet = new Set(row.tags)
+  if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
+    tempDiv = document.createElement("div")
+    // console.log(row)
+    if (row.image_url == null) {
+      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
+    }
+    tempDiv.innerHTML = galleryItemTemplate(row.title, row.url, row.image_url, row.description, row.rating, row.rating_count, row.tags)
+    document.getElementById("gallery").appendChild(tempDiv)
+  }
+}
+
 function filterText() {
   document.getElementById("gallery").innerHTML = ""
   console.log("------------------------------------------")
   console.log("query: " + document.getElementById("filter-text-val").value)
+  console.log("filter tags: ")
+  console.log(selectedTags)
+  
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {
-      var rowTagSet = new Set(row.tags)
-      if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
-        tempDiv = document.createElement("div")
-        // console.log(row)
-        if (row.image_url == null) {
-          row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
-        }
-        tempDiv.innerHTML = galleryItemTemplate(row.title, row.url, row.image_url, row.description, row.rating, row.rating_count, row.tags)
-        document.getElementById("gallery").appendChild(tempDiv)
-      }
+      filterTextHelper(row)
     }));
 
 }
