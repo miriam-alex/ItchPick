@@ -7,6 +7,8 @@ Counter({'Games': 2225, 'Free': 1981, 'Visual Novel': 352, 'Adventure': 268, 'Ac
 'Fighting': 21, 'Racing': 16, 'Sports': 13, 'On sale': 4})
 */
 
+
+const words = ["Grandmas and cafes...", "Cute cats..."];
 const availableTags = ["Visual Novel", "Adventure", "Action", "Featured", "Platformer", "Puzzle", "Simulation", "Role Playing", "Shooter", "Survival", "Strategy", "Educational", "Card Game", "Rhythm", "Fighting", "Racing", "Sports"];
 
 const selectedTags = new Set();
@@ -82,7 +84,8 @@ input.addEventListener("keydown", function (event) {
 
 
 function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags) {
-  rating_string = (rating == null || rating_count < 5) ? "" : rating.toString()
+  rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
+  title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}:`
 
   spanContents = ""
 
@@ -95,7 +98,7 @@ function galleryItemTemplate(title, url, image_url, description, rating, rating_
       <a href="${url}" target="_blank" rel="noopener noreferrer">
         <img src="${image_url}" alt="Thumbnail of ${title}">
         <div class="overlay">
-          <b> ${title} (${rating}★): </b>  ${description} 
+          <b>${title_string}</b>  ${description} 
           <span class="tag-span">
           ${spanContents}
           </span>
@@ -139,3 +142,32 @@ function filterText() {
     }));
 
 }
+
+// SEARCH BAR ANIMATION CODE
+
+const searchBar = document.getElementById('filter-text-val');
+
+let wordIndex = 0;
+let charIndex = 0;
+let isDeleting = false;
+
+function typeEffect() {
+  const currentWord = words[wordIndex];
+  let displayedText = currentWord.substring(0, charIndex);
+
+  searchBar.setAttribute("placeholder", displayedText);
+
+  if (!isDeleting && charIndex < currentWord.length) {
+    charIndex++;
+    setTimeout(typeEffect, 100);
+  } else if (isDeleting && charIndex > 0) {
+    charIndex--;
+    setTimeout(typeEffect, 50);
+  } else {
+    isDeleting = !isDeleting;
+    if (!isDeleting) wordIndex = (wordIndex + 1) % words.length;
+    setTimeout(typeEffect, 1000);
+  }
+}
+
+typeEffect();

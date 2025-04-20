@@ -14,7 +14,7 @@
         <div class="input">
             <div class="input-box" onclick="sendFocus()">
                 <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Search for a game" id="filter-text-val">
+                <input  type="text" placeholder="" id="filter-text-val">
             </div>
             <div class="tags-container" id="tagsContainer">
                 <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
