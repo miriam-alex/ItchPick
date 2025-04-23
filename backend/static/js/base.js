@@ -7,7 +7,6 @@ Counter({'Games': 2225, 'Free': 1981, 'Visual Novel': 352, 'Adventure': 268, 'Ac
 'Fighting': 21, 'Racing': 16, 'Sports': 13, 'On sale': 4})
 */
 
-
 const words = ["Grandmas and cafes...", "Cute cats..."];
 const availableTags = ["Visual Novel", "Adventure", "Action", "Featured", "Platformer", "Puzzle", "Simulation", "Role Playing", "Shooter", "Survival", "Strategy", "Educational", "Card Game", "Rhythm", "Fighting", "Racing", "Sports"];
 
@@ -49,62 +48,54 @@ function addSelectedTag(selectElement) {
   tagsContainer.insertBefore(tagEl, dropdown);
   selectedTags.add(tagText);
   populateDropdown();
-
-  console.log("added tag " + tagText)
-  console.log(selectedTags)
 }
 
 function removeTag(button) {
   const tagEl = button.parentElement;
-  // Slice is to get rid of the x and then trimming for any extra whitespace
   const tagText = tagEl.textContent.slice(0, -1).trim();
-  console.log(tagText)
   selectedTags.delete(tagText);
   tagEl.remove();
-  console.log(selectedTags)
   populateDropdown();
 }
 
-populateDropdown(); // Initial fill
+populateDropdown();
 
 // TRIGGERING SEARCH ON KEYPRESS
 
 const input = document.getElementById("filter-text-val");
 
-// Trigger function on Enter key
 input.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
-    event.preventDefault(); // Prevent default form behavior
+    event.preventDefault();
     filterText();
   }
 });
 
+// GENERATING RESULTS
 
-// GENERATING RESULTS (from class)
+function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments) {
+  const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
+  const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}:`
 
-
-function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags) {
-  rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
-  title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}:`
-
-  spanContents = ""
-
+  let spanContents = ""
   tags.forEach(element => {
-    const tagEl = `<span class=tag> ${element} </span>`
+    const tagEl = `<span class="tag"> ${element} </span>`
     spanContents += tagEl + " "
   });
 
-  return `<div class="gallery-item">
-      <a href="${url}" target="_blank" rel="noopener noreferrer">
-        <img src="${image_url}" alt="Thumbnail of ${title}">
-        <div class="overlay">
-          <b>${title_string}</b>  ${description} 
-          <span class="tag-span">
-          ${spanContents}
-          </span>
-        </div>
-      </a>
-  </div>`
+  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating};
+  console.log("Rendering game:", gameObj);
+
+  return `
+    <div class="gallery-item" 
+      data-game='${escapeHTML(JSON.stringify(gameObj))}' 
+      onclick="openSidebarFromElement(this)">
+      <img src="${image_url}" alt="Thumbnail of ${title}">
+      <div class="overlay">
+        <b>${title_string}</b> ${description}
+        <span class="tag-span">${spanContents}</span>
+      </div>
+    </div>`;
 }
 
 function sendFocus() {
@@ -118,29 +109,31 @@ function setsOverlap(set1, set2) {
 function filterTextHelper(row) {
   var rowTagSet = new Set(row.tags)
   if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
-    tempDiv = document.createElement("div")
-    // console.log(row)
+    const tempDiv = document.createElement("div");
     if (row.image_url == null) {
-      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
+      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg";
     }
-    tempDiv.innerHTML = galleryItemTemplate(row.title, row.url, row.image_url, row.description, row.rating, row.rating_count, row.tags)
-    document.getElementById("gallery").appendChild(tempDiv)
+    tempDiv.innerHTML = galleryItemTemplate(
+      row.title,
+      row.url,
+      row.image_url,
+      row.description,
+      row.rating,
+      row.rating_count,
+      row.tags,
+      row.recent_comments
+    );
+    document.getElementById("gallery").appendChild(tempDiv);
   }
 }
 
 function filterText() {
-  document.getElementById("gallery").innerHTML = ""
-  console.log("------------------------------------------")
-  console.log("query: " + document.getElementById("filter-text-val").value)
-  console.log("filter tags: ")
-  console.log(selectedTags)
-  
+  document.getElementById("gallery").innerHTML = "";
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {
       filterTextHelper(row)
     }));
-
 }
 
 // SEARCH BAR ANIMATION CODE
@@ -171,3 +164,65 @@ function typeEffect() {
 }
 
 typeEffect();
+
+// SIDEBAR FUNCTIONS
+
+function openSidebar(game) {
+  const sidebar = document.getElementById("sidebar");
+  const content = document.getElementById("sidebar-content");
+
+  const tagHTML = game.tags.map(tag => `<span class="tag">${tag}</span>`).join(" ");
+
+  let commentHTML = "";
+    if (game.recent_comments) {
+      commentHTML = `<p><strong>Top Comments:</strong><br><ul>`;
+        commentHTML += `<li style="margin-bottom: 0.5em;">${game.recent_comments}</li>`;
+      commentHTML += `</ul></p>`;
+}
+
+content.innerHTML = `
+  <h2>${game.title}</h2>
+  <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
+  <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
+  <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
+  <p><strong>Tags:</strong><br>${tagHTML}</p>
+  ${commentHTML}
+  <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
+`;
+
+  sidebar.classList.remove("hidden");
+  sidebar.classList.add("visible");
+}
+
+function openSidebarFromElement(el) {
+  try {
+    const game = JSON.parse(unescapeHTML(el.dataset.game));
+    openSidebar(game);
+  } catch (err) {
+    console.error("Failed to parse game data:", err);
+  }
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.remove("visible");
+  sidebar.classList.add("hidden");
+}
+
+// ESCAPE HELPERS
+
+function escapeHTML(str) {
+  return str.replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+}
+
+function unescapeHTML(str) {
+  return str.replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&amp;/g, "&");
+}
