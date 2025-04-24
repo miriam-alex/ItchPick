@@ -1,43 +1,68 @@
 <!doctype html>
 <title>{% block title %}{% endblock %} - Flaskr</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='modal.css') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&family=Open+Sans:wght@500&display=swap"
     rel="stylesheet">
 
 <body>
-    <div class="top-text">
-        <div class="title">
-            <h1 id="itch-picks-title">ItchPick</h1>
-        </div>
-        <div class="input">
-            <div class="input-box" onclick="sendFocus()">
-                <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input  type="text" placeholder="" id="filter-text-val">
+    <div class="main">
+
+        <div class="top-text">
+            <div class="title">
+                <h1 id="itch-picks-title">ItchPick</h1>
+            </div>
+            <div class="input">
+                <div class="input-box" onclick="sendFocus()">
+                    <img src="{{ url_for('static', filename='images/mag.png') }}" />
+                    <input  type="text" placeholder="" id="filter-text-val">
                 <img id="filter-image" src="{{ url_for('static', filename='images/filter.png') }}" />
-            </div>
-            <div class="tags-container" id="tagsContainer">
-                <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
-                    <option disabled selected>+ Add Tag</option>
-                </select>
+                </div>
+                <div class="tags-container" id="tagsContainer">
+                    <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
+                        <option disabled selected>+ Add Tag</option>
+                    </select>
+                </div>
             </div>
         </div>
-    </div>
 
     <!-- Modal structure -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
-          <span class="close-button">&times;</span>
-          <h2>Additional Filters</h2>
-          <p>Developer</p>
-          <input  type="text" placeholder="E.g. Angela He" id="developer-text-val">
-          <p>Price</p>
-          <input type="range" min="0" max="25" value="1" />
-        </div>
-      </div>
+            <span class="close-button">&times;</span>
+            <h2>Additional Filters</h2>
 
-    <div class="gallery" id="gallery">
+            <p>Developer</p>
+            <input  type="text" placeholder="E.g. angela he" id="developer-text-val">
+
+            <div class="price-slider">
+                <label for="price">Maximum Price: $<span id="price-value">1</span></label>
+                <input type="range" id="price" min="0" max="25" value="1" />
+                <div class="range-labels">
+                    <span>$0</span>
+                    <span>$25+</span>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="apply-filter-button" class="apply-button">Apply Filters</button>
+            </div>
+        </div>
     </div>
+
+
+        <div class="gallery" id="gallery">
+        </div>
+
+    </div>
+
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+
+    <div id="sidebar" class="sidebar hidden">
+        <button class="close-btn" onclick="closeSidebar()">×</button>
+        <div id="sidebar-content"></div>
+    </div>  
+
 </body>

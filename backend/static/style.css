@@ -16,7 +16,6 @@
     --tag-color: white;
     --tag-dropdown-background-color:#6b5992;
     --tag-dropdown-color: white;
-    --modal-background-color: rgb(65, 99, 120);
 }
 
 
@@ -25,19 +24,24 @@ html {
 }
 
 body {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
+    margin: 0;
+    padding: 0;
     display: flex;
-    justify-content: start;
-    align-items: center;
-    flex-direction: column;
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--background-color);
+  }
+
+.main {
+    flex-grow: 1;
+    overflow-y: auto;
+    transition: margin-right 0.3s ease;
 }
 
+body.sidebar-open .main {
+    margin-right: 350px; 
+}
 
 .title {
     display: flex;
@@ -78,6 +82,11 @@ body {
     color: white;
 }
 
+.input-box:focus {
+    border-color: #fff;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
 .input {
     display: flex;
     flex-direction: column;
@@ -107,10 +116,13 @@ body {
 
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, 300px);
+    grid-auto-rows: 300px;
     gap: 20px;
     margin-top: 50px;
     width: 90%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .gallery-item {
@@ -122,7 +134,7 @@ body {
 }
 
 .gallery-item img {
-    width: 100%;
+    height: 100%;
     display: block;
     transition: transform 0.5s ease;
 }
@@ -211,63 +223,48 @@ body {
     color: #aaa;
 }
 
-/* MODAL */
-
-.modal {
+.sidebar {
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
+    right: 0;
+    width: 350px;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: #1e2a38;
+    box-shadow: -4px 0 8px rgba(0,0,0,0.3);
+    padding: 20px;
+    color: white;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    transform: translateX(100%);
     z-index: 1000;
-}
+  }
 
-/* Hidden by default */
-.hidden {
-    display: none;
-}
 
-/* Modal content box */
-.modal-content {
-    background-color: var(--modal-background-color);
-    padding: 30px;
+  #sidebar .tag {
+    display: inline-block;
+    color: white;
+    padding: 4px 8px;
+    margin: 4px 6px 4px 0;
     border-radius: 8px;
-    width: 400px;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    color: var(--text-color);
-}
-  
-/* Close button */
-.close-button {
+    font-size: 0.9em;
+    white-space: nowrap;
+  }  
+
+  .sidebar.visible {
+    transform: translateX(0);
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
     position: absolute;
     top: 10px;
     right: 15px;
-    font-size: 24px;
     cursor: pointer;
-}
-
-/* Icon styling */
-#icon {
-    font-size: 28px;
-    cursor: pointer;
-    margin: 20px;
-}
-
-#developer-text-val {
-    width: 100%;
-    font-size: 15px;
-    border: none;
-    outline: 0;
-    background-color: var(--background-color);
-    color: white;
-    border-radius: 50px;
-    border: 1px solid white;
-    display: flex;
-    align-items: center;
-    padding: 12px;
-}
+  }
