@@ -82,7 +82,6 @@ input.addEventListener("keydown", function (event) {
 
 // GENERATING RESULTS (from class)
 
-
 function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags) {
   rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
   title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}:`
@@ -135,6 +134,7 @@ function filterText() {
   console.log("filter tags: ")
   console.log(selectedTags)
   
+  if (filterText)
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {
@@ -171,3 +171,24 @@ function typeEffect() {
 }
 
 typeEffect();
+
+// MODAL CODE
+
+const modal = document.getElementById("modal");
+const icon = document.getElementById("filter-image");
+const closeButton = document.querySelector(".close-button");
+
+icon.addEventListener("click", () => {
+  modal.classList.remove("hidden");
+});
+
+closeButton.addEventListener("click", () => {
+  modal.classList.add("hidden");
+});
+
+// Optional: Close modal on background click
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    modal.classList.add("hidden");
+  }
+});

@@ -11,10 +11,12 @@
 :root {
     --title-color: #fa5c5c;
     --background-color: #2f4858;
+    --text-color: white;
     --tag-background-color: #D95183 ;
     --tag-color: white;
     --tag-dropdown-background-color:#6b5992;
     --tag-dropdown-color: white;
+    --modal-background-color: rgb(65, 99, 120);
 }
 
 
@@ -79,6 +81,15 @@ body {
 .input {
     display: flex;
     flex-direction: column;
+}
+
+#filter-image {
+    padding-right: 4px;
+    transition: all 0.25s ease;
+}
+
+#filter-image:hover {
+    opacity: 0.5;
 }
 
 .top-text {
@@ -186,7 +197,7 @@ body {
 
 .tag-dropdown {
     appearance: none;
-    border: 1px dashed #1c7ed6;
+    border: none;
     background-color: var(--tag-dropdown-background-color);
     color: var(--tag-dropdown-color);
     border-radius: 20px;
@@ -198,4 +209,65 @@ body {
 
 .tag-dropdown option:disabled {
     color: #aaa;
+}
+
+/* MODAL */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* Hidden by default */
+.hidden {
+    display: none;
+}
+
+/* Modal content box */
+.modal-content {
+    background-color: var(--modal-background-color);
+    padding: 30px;
+    border-radius: 8px;
+    width: 400px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    color: var(--text-color);
+}
+  
+/* Close button */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Icon styling */
+#icon {
+    font-size: 28px;
+    cursor: pointer;
+    margin: 20px;
+}
+
+#developer-text-val {
+    width: 100%;
+    font-size: 15px;
+    border: none;
+    outline: 0;
+    background-color: var(--background-color);
+    color: white;
+    border-radius: 50px;
+    border: 1px solid white;
+    display: flex;
+    align-items: center;
+    padding: 12px;
 }
