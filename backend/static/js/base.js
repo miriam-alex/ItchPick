@@ -168,6 +168,9 @@ typeEffect();
 // SIDEBAR FUNCTIONS
 
 function openSidebar(game) {
+
+  document.body.classList.add("sidebar-open");
+
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("sidebar-content");
 
@@ -204,6 +207,14 @@ function openSidebarFromElement(el) {
 }
 
 function closeSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.remove("visible");
+  sidebar.classList.add("hidden");
+}
+
+function closeSidebar() {
+  document.body.classList.remove("sidebar-open");
+
   const sidebar = document.getElementById("sidebar");
   sidebar.classList.remove("visible");
   sidebar.classList.add("hidden");

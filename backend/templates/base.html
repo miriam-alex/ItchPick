@@ -7,27 +7,37 @@
     rel="stylesheet">
 
 <body>
-    <div class="top-text">
-        <div class="title">
-            <h1 id="itch-picks-title">ItchPick</h1>
-        </div>
-        <div class="input">
-            <div class="input-box" onclick="sendFocus()">
-                <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input  type="text" placeholder="" id="filter-text-val">
+    <div class="main">
+ 
+        <div class="top-text">
+
+            <div class="title">
+                <h1 id="itch-picks-title">ItchPick</h1>
             </div>
-            <div class="tags-container" id="tagsContainer">
-                <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
-                    <option disabled selected>+ Add Tag</option>
-                </select>
+
+            <div class="input">
+                <div class="input-box" onclick="sendFocus()">
+                    <img src="{{ url_for('static', filename='images/mag.png') }}" />
+                    <input  type="text" placeholder="" id="filter-text-val">
+                </div>
+                <div class="tags-container" id="tagsContainer">
+                    <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
+                        <option disabled selected>+ Add Tag</option>
+                    </select>
+                </div>
             </div>
+
         </div>
+
+        <div class="gallery" id="gallery">
+        </div>
+
     </div>
-    <div class="gallery" id="gallery">
-    </div>
+
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     <div id="sidebar" class="sidebar hidden">
         <button class="close-btn" onclick="closeSidebar()">×</button>
         <div id="sidebar-content"></div>
-      </div>      
+    </div>  
+        
 </body>
