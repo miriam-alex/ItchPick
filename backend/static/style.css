@@ -232,6 +232,14 @@ body.sidebar-open .main {
     z-index: 1000;
   }
 
+  .tag-selected {
+    background-color: #ff69b4 !important;
+    color: white;
+    font-weight: bold;
+    border: 2px solid white;
+    box-shadow: 0 0 5px #ff69b4aa;
+  }
+
   #sidebar .tag {
     display: inline-block;
     color: white;

@@ -83,7 +83,15 @@ function galleryItemTemplate(title, url, image_url, description, rating, rating_
     spanContents += tagEl + " "
   });
 
-  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating};
+  const gameObj = { 
+    title, 
+    url, 
+    image_url, 
+    description, 
+    tags, 
+    recent_comments, 
+    rating_count, 
+    rating};
   console.log("Rendering game:", gameObj);
 
   return `
@@ -174,7 +182,11 @@ function openSidebar(game) {
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("sidebar-content");
 
-  const tagHTML = game.tags.map(tag => `<span class="tag">${tag}</span>`).join(" ");
+  const tagHTML = game.tags.map(tag => {
+    const isSelected = selectedTags.has(tag);
+    const extraClass = isSelected ? "tag-selected" : "";
+    return `<span class="tag ${extraClass}">${tag}</span>`;
+  }).join(" ");
 
   let commentHTML = "";
     if (game.recent_comments) {
