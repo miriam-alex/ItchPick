@@ -20,7 +20,7 @@ const priceValue = document.getElementById('price-value');
 const applyFilterButton = document.getElementById('apply-filter-button');
 
 let selectedDeveloper = "";
-let selectedPrice = ""
+let selectedPrice = null;
 
 
 // code for price slider
@@ -30,7 +30,7 @@ priceInput.addEventListener('input', function () {
 
 applyFilterButton.addEventListener("click", function() {
   selectedDeveloper = document.getElementById("developer-text-val").value.toLowerCase().trim();
-  selectedPrice = priceValue;
+  selectedPrice = priceValue.value;
   alert("Filter applied!");
 });
 
@@ -101,7 +101,7 @@ input.addEventListener("keydown", function (event) {
 
 // GENERATING RESULTS (from class)
 
-function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments) {
+function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments, author, price) {
   const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
   const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}:`
 
@@ -112,7 +112,7 @@ function galleryItemTemplate(title, url, image_url, description, rating, rating_
     spanContents += tagEl + " "
   });
 
-  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating};
+  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating, author, price};
   console.log("Rendering game:", gameObj);
 
   return `
@@ -151,7 +151,9 @@ function filterTextHelper(row) {
       row.rating,
       row.rating_count,
       row.tags,
-      row.recent_comments
+      row.recent_comments,
+      row.author,
+      row.price
     );
     document.getElementById("gallery").appendChild(tempDiv);
   }
@@ -166,8 +168,12 @@ function filterText() {
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {
+      // restricting search to just the selected developer, if specified
+      validDeveloper = selectedDeveloper == "" || row.author.toLowerCase() == selectedDeveloper
+      validPrice = selectedPrice == null || row.price <= selectedPrice
+
       // RESTRICTING SEARCH TO JUST THAT DEVELOPER
-      if (selectedDeveloper == "" || row.author.toLowerCase() == selectedDeveloper) {
+      if (validDeveloper && validPrice) {
         filterTextHelper(row)
       }
     }));
