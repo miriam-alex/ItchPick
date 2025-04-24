@@ -7,7 +7,6 @@ Counter({'Games': 2225, 'Free': 1981, 'Visual Novel': 352, 'Adventure': 268, 'Ac
 'Fighting': 21, 'Racing': 16, 'Sports': 13, 'On sale': 4})
 */
 
-
 const words = ["Grandmas and cafes...", "Cute cats..."];
 const availableTags = ["Visual Novel", "Adventure", "Action", "Featured", "Platformer", "Puzzle", "Simulation", "Role Playing", "Shooter", "Survival", "Strategy", "Educational", "Card Game", "Rhythm", "Fighting", "Racing", "Sports"];
 
@@ -20,7 +19,7 @@ const priceValue = document.getElementById('price-value');
 const applyFilterButton = document.getElementById('apply-filter-button');
 
 let selectedDeveloper = "";
-let selectedPrice = ""
+let selectedPrice = null;
 
 
 // code for price slider
@@ -30,7 +29,7 @@ priceInput.addEventListener('input', function () {
 
 applyFilterButton.addEventListener("click", function() {
   selectedDeveloper = document.getElementById("developer-text-val").value.toLowerCase().trim();
-  selectedPrice = priceValue;
+  selectedPrice = priceValue.value;
   alert("Filter applied!");
 });
 
@@ -68,51 +67,42 @@ function addSelectedTag(selectElement) {
   tagsContainer.insertBefore(tagEl, dropdown);
   selectedTags.add(tagText);
   populateDropdown();
-
-  console.log("added tag " + tagText)
-  console.log(selectedTags)
 }
 
 function removeTag(button) {
   const tagEl = button.parentElement;
-  // Slice is to get rid of the x and then trimming for any extra whitespace
   const tagText = tagEl.textContent.slice(0, -1).trim();
-  console.log(tagText)
   selectedTags.delete(tagText);
   tagEl.remove();
-  console.log(selectedTags)
   populateDropdown();
 }
 
-populateDropdown(); // Initial fill
+populateDropdown();
 
 // TRIGGERING SEARCH ON KEYPRESS
 
 const input = document.getElementById("filter-text-val");
 
-// Trigger function on Enter key
 input.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
-    event.preventDefault(); // Prevent default form behavior
+    event.preventDefault();
     filterText();
   }
 });
 
+// GENERATING RESULTS
 
-// GENERATING RESULTS (from class)
-
-function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments) {
+function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments, author, price) {
   const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
   const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}:`
 
   let spanContents = ""
-
   tags.forEach(element => {
     const tagEl = `<span class="tag"> ${element} </span>`
     spanContents += tagEl + " "
   });
 
-  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating};
+  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating, author, price};
   console.log("Rendering game:", gameObj);
 
   return `
@@ -138,10 +128,9 @@ function setsOverlap(set1, set2) {
 function filterTextHelper(row) {
   var rowTagSet = new Set(row.tags)
   if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
-    const tempDiv = document.createElement("div")
-    // console.log(row)
+    const tempDiv = document.createElement("div");
     if (row.image_url == null) {
-      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
+      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg";
     }
     tempDiv.innerHTML = galleryItemTemplate(
       row.title,
@@ -151,7 +140,9 @@ function filterTextHelper(row) {
       row.rating,
       row.rating_count,
       row.tags,
-      row.recent_comments
+      row.recent_comments,
+      row.author,
+      row.price
     );
     document.getElementById("gallery").appendChild(tempDiv);
   }
@@ -166,12 +157,15 @@ function filterText() {
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {
+      // restricting search to just the selected developer, if specified
+      validDeveloper = selectedDeveloper == "" || row.author.toLowerCase() == selectedDeveloper
+      validPrice = selectedPrice == null || row.price <= selectedPrice
+
       // RESTRICTING SEARCH TO JUST THAT DEVELOPER
-      if (selectedDeveloper == "" || row.author.toLowerCase() == selectedDeveloper) {
+      if (validDeveloper && validPrice) {
         filterTextHelper(row)
       }
     }));
-
 }
 
 // SEARCH BAR ANIMATION CODE
@@ -210,7 +204,11 @@ function openSidebar(game) {
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("sidebar-content");
 
-  const tagHTML = game.tags.map(tag => `<span class="tag">${tag}</span>`).join(" ");
+  const tagHTML = game.tags.map(tag => {
+    const isSelected = selectedTags.has(tag);
+    const extraClass = isSelected ? "tag-selected" : "";
+    return `<span class="tag ${extraClass}">${tag}</span>`;
+  }).join(" ");
 
   let commentHTML = "";
     if (game.recent_comments) {
