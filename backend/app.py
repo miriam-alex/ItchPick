@@ -16,6 +16,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize
 
+NUM_RESULTS_RETURNED = 40
+
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
 os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
@@ -119,6 +121,7 @@ def json_search(query):
         }
         for i, score in boosted_results
     ]
+    # results = results[:NUM_RESULTS_RETURNED]
     return jsonify(results)
 
 @app.route('/')
