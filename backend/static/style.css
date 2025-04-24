@@ -45,6 +45,14 @@ body.sidebar-open .main {
     margin-right: 350px; 
 }
 
+.tag-selected {
+    background-color: #ff69b4 !important;
+    color: white;
+    font-weight: bold;
+    border: 2px solid white;
+    box-shadow: 0 0 5px #ff69b4aa;
+  }
+
 .title {
     margin-left: auto;
     margin-right: auto;

@@ -198,7 +198,11 @@ function openSidebar(game) {
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("sidebar-content");
 
-  const tagHTML = game.tags.map(tag => `<span class="tag">${tag}</span>`).join(" ");
+  const tagHTML = game.tags.map(tag => {
+    const isSelected = selectedTags.has(tag);
+    const extraClass = isSelected ? "tag-selected" : "";
+    return `<span class="tag ${extraClass}">${tag}</span>`;
+  }).join(" ");
 
   let commentHTML = "";
     if (game.recent_comments) {
