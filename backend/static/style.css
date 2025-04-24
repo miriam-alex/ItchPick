@@ -11,6 +11,7 @@
 :root {
     --title-color: #fa5c5c;
     --background-color: #2f4858;
+    --text-color: white;
     --tag-background-color: #D95183 ;
     --tag-color: white;
     --tag-dropdown-background-color:#6b5992;
@@ -23,13 +24,8 @@ html {
 }
 
 body {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
+    margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: row;
     height: 100vh;
@@ -90,9 +86,23 @@ body.sidebar-open .main {
     color: white;
 }
 
+.input-box:focus {
+    border-color: #fff;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
 .input {
     display: flex;
     flex-direction: column;
+}
+
+#filter-image {
+    padding-right: 4px;
+    transition: all 0.25s ease;
+}
+
+#filter-image:hover {
+    opacity: 0.5;
 }
 
 .top-text {
@@ -110,7 +120,8 @@ body.sidebar-open .main {
 
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, 300px);
+    grid-auto-rows: 300px;
     gap: 20px;
     margin-top: 50px;
     width: 90%;
@@ -127,7 +138,7 @@ body.sidebar-open .main {
 }
 
 .gallery-item img {
-    width: 100%;
+    height: 100%;
     display: block;
     transition: transform 0.5s ease;
 }
@@ -202,7 +213,7 @@ body.sidebar-open .main {
 
 .tag-dropdown {
     appearance: none;
-    border: 1px dashed #1c7ed6;
+    border: none;
     background-color: var(--tag-dropdown-background-color);
     color: var(--tag-dropdown-color);
     border-radius: 20px;

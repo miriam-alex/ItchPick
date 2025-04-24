@@ -14,6 +14,25 @@ const selectedTags = new Set();
 
 const dropdown = document.getElementById("tagDropdown");
 const tagsContainer = document.getElementById("tagsContainer");
+const priceInput = document.getElementById('price');
+const priceValue = document.getElementById('price-value');
+const applyFilterButton = document.getElementById('apply-filter-button');
+
+let selectedDeveloper = "";
+let selectedPrice = ""
+
+
+// code for price slider
+priceInput.addEventListener('input', function () {
+  priceValue.textContent = this.value;
+});
+
+applyFilterButton.addEventListener("click", function() {
+  selectedDeveloper = document.getElementById("developer-text-val").value.toLowerCase().trim();
+  selectedPrice = priceValue;
+  alert("Filter applied!");
+});
+
 
 function populateDropdown() {
   dropdown.innerHTML = '<option disabled selected>+ Add a tag</option>';
@@ -83,15 +102,7 @@ function galleryItemTemplate(title, url, image_url, description, rating, rating_
     spanContents += tagEl + " "
   });
 
-  const gameObj = { 
-    title, 
-    url, 
-    image_url, 
-    description, 
-    tags, 
-    recent_comments, 
-    rating_count, 
-    rating};
+  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating};
   console.log("Rendering game:", gameObj);
 
   return `
@@ -136,11 +147,18 @@ function filterTextHelper(row) {
 }
 
 function filterText() {
-  document.getElementById("gallery").innerHTML = "";
+  document.getElementById("gallery").innerHTML = ""
+  // console.log("------------------------------------------")
+  // console.log("query: " + document.getElementById("filter-text-val").value)
+  const query = document.getElementById("filter-text-val").value.trim()
+  if (query)
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {
-      filterTextHelper(row)
+      // RESTRICTING SEARCH TO JUST THAT DEVELOPER
+      if (selectedDeveloper == "" || row.author.toLowerCase() == selectedDeveloper) {
+        filterTextHelper(row)
+      }
     }));
 }
 
@@ -176,22 +194,16 @@ typeEffect();
 // SIDEBAR FUNCTIONS
 
 function openSidebar(game) {
-
   document.body.classList.add("sidebar-open");
-
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("sidebar-content");
 
-  const tagHTML = game.tags.map(tag => {
-    const isSelected = selectedTags.has(tag);
-    const extraClass = isSelected ? "tag-selected" : "";
-    return `<span class="tag ${extraClass}">${tag}</span>`;
-  }).join(" ");
+  const tagHTML = game.tags.map(tag => `<span class="tag">${tag}</span>`).join(" ");
 
   let commentHTML = "";
     if (game.recent_comments) {
       commentHTML = `<p><strong>Top Comments:</strong><br><ul>`;
-        commentHTML += `<li style="margin-bottom: 0.5em;">${game.recent_comments}</li>`;
+      commentHTML += `<li style="margin-bottom: 0.5em;">${game.recent_comments}</li>`;
       commentHTML += `</ul></p>`;
 }
 
@@ -249,3 +261,24 @@ function unescapeHTML(str) {
             .replace(/&gt;/g, ">")
             .replace(/&amp;/g, "&");
 }
+
+// MODAL CODE
+
+const modal = document.getElementById("modal");
+const icon = document.getElementById("filter-image");
+const closeButton = document.querySelector(".close-button");
+
+icon.addEventListener("click", () => {
+  modal.classList.remove("hidden");
+});
+
+closeButton.addEventListener("click", () => {
+  modal.classList.add("hidden");
+});
+
+// Optional: Close modal on background click
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    modal.classList.add("hidden");
+  }
+});

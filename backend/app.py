@@ -24,8 +24,8 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the path to the JSON file relative to the current script
-json_file_path = os.path.join(current_directory, 'data_games_cleaned.json')
-ui_json_file_path = os.path.join(current_directory, 'ui_games_cleaned.json')
+json_file_path = os.path.join(current_directory, 'DATA_games.json')
+ui_json_file_path = os.path.join(current_directory, 'UI_games.json')
 
 def get_valid_text(x):
     if x is not None:
@@ -105,7 +105,7 @@ def json_search(query):
     
     results = [
         {
-            "title": data[i]["title"],
+            "title": ui_data[i]["title"],
             "description": ui_data[i].get("logline") if ui_data[i].get("logline") != None else "No description available",
             "rating": data[i]["rating"]["aggregate_rating"],
             "rating_count": data[i]["rating"]["rating_count"],
@@ -113,7 +113,8 @@ def json_search(query):
             "url": data[i]["url"],
             "image_url": data[i]["image"] if "image" in data[i] else None,
             "score": round(score, 4),
-            "recent_comments": data[i]["recent_comments"][0] if "recent_comments" in data[i] and len(data[i]["recent_comments"]) > 0 else None
+            "recent_comments": ui_data[i]["recent_comments"][0] if "recent_comments" in ui_data[i] and len(ui_data[i]["recent_comments"]) > 0 else None,
+            "author": data[i]["author"]
         }
         for i, score in boosted_results
     ]
