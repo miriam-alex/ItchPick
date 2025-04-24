@@ -7,7 +7,6 @@ Counter({'Games': 2225, 'Free': 1981, 'Visual Novel': 352, 'Adventure': 268, 'Ac
 'Fighting': 21, 'Racing': 16, 'Sports': 13, 'On sale': 4})
 */
 
-
 const words = ["Grandmas and cafes...", "Cute cats..."];
 const availableTags = ["Visual Novel", "Adventure", "Action", "Featured", "Platformer", "Puzzle", "Simulation", "Role Playing", "Shooter", "Survival", "Strategy", "Educational", "Card Game", "Rhythm", "Fighting", "Racing", "Sports"];
 
@@ -68,45 +67,36 @@ function addSelectedTag(selectElement) {
   tagsContainer.insertBefore(tagEl, dropdown);
   selectedTags.add(tagText);
   populateDropdown();
-
-  console.log("added tag " + tagText)
-  console.log(selectedTags)
 }
 
 function removeTag(button) {
   const tagEl = button.parentElement;
-  // Slice is to get rid of the x and then trimming for any extra whitespace
   const tagText = tagEl.textContent.slice(0, -1).trim();
-  console.log(tagText)
   selectedTags.delete(tagText);
   tagEl.remove();
-  console.log(selectedTags)
   populateDropdown();
 }
 
-populateDropdown(); // Initial fill
+populateDropdown();
 
 // TRIGGERING SEARCH ON KEYPRESS
 
 const input = document.getElementById("filter-text-val");
 
-// Trigger function on Enter key
 input.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
-    event.preventDefault(); // Prevent default form behavior
+    event.preventDefault();
     filterText();
   }
 });
 
-
-// GENERATING RESULTS (from class)
+// GENERATING RESULTS
 
 function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments, author, price) {
   const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
   const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}:`
 
   let spanContents = ""
-
   tags.forEach(element => {
     const tagEl = `<span class="tag"> ${element} </span>`
     spanContents += tagEl + " "
@@ -138,10 +128,9 @@ function setsOverlap(set1, set2) {
 function filterTextHelper(row) {
   var rowTagSet = new Set(row.tags)
   if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
-    const tempDiv = document.createElement("div")
-    // console.log(row)
+    const tempDiv = document.createElement("div");
     if (row.image_url == null) {
-      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg"
+      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg";
     }
     tempDiv.innerHTML = galleryItemTemplate(
       row.title,
@@ -177,7 +166,6 @@ function filterText() {
         filterTextHelper(row)
       }
     }));
-
 }
 
 // SEARCH BAR ANIMATION CODE
@@ -216,7 +204,11 @@ function openSidebar(game) {
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("sidebar-content");
 
-  const tagHTML = game.tags.map(tag => `<span class="tag">${tag}</span>`).join(" ");
+  const tagHTML = game.tags.map(tag => {
+    const isSelected = selectedTags.has(tag);
+    const extraClass = isSelected ? "tag-selected" : "";
+    return `<span class="tag ${extraClass}">${tag}</span>`;
+  }).join(" ");
 
   let commentHTML = "";
     if (game.recent_comments) {
