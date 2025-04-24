@@ -112,7 +112,8 @@ def json_search(query):
             "tags": data[i]["tags"],
             "url": data[i]["url"],
             "image_url": data[i]["image"] if "image" in data[i] else None,
-            "score": round(score, 4)
+            "score": round(score, 4),
+             "recent_comments": data[i]["recent_comments"][0] if "recent_comments" in data[i] and len(data[i]["recent_comments"]) > 0 else None
         }
         for i, score in boosted_results
     ]
