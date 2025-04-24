@@ -114,6 +114,8 @@ body.sidebar-open .main {
     gap: 20px;
     margin-top: 50px;
     width: 90%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .gallery-item {
