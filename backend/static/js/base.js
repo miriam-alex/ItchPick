@@ -185,6 +185,7 @@ typeEffect();
 // SIDEBAR FUNCTIONS
 
 function openSidebar(game) {
+  document.body.classList.add("sidebar-open");
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("sidebar-content");
 
@@ -193,7 +194,7 @@ function openSidebar(game) {
   let commentHTML = "";
     if (game.recent_comments) {
       commentHTML = `<p><strong>Top Comments:</strong><br><ul>`;
-        commentHTML += `<li style="margin-bottom: 0.5em;">${game.recent_comments}</li>`;
+      commentHTML += `<li style="margin-bottom: 0.5em;">${game.recent_comments}</li>`;
       commentHTML += `</ul></p>`;
 }
 
@@ -221,6 +222,14 @@ function openSidebarFromElement(el) {
 }
 
 function closeSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.remove("visible");
+  sidebar.classList.add("hidden");
+}
+
+function closeSidebar() {
+  document.body.classList.remove("sidebar-open");
+
   const sidebar = document.getElementById("sidebar");
   sidebar.classList.remove("visible");
   sidebar.classList.add("hidden");

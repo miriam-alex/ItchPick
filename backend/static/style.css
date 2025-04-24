@@ -23,19 +23,24 @@ html {
 }
 
 body {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
+    margin: 0;
+    padding: 0;
     display: flex;
-    justify-content: start;
-    align-items: center;
-    flex-direction: column;
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--background-color);
+  }
+
+.main {
+    flex-grow: 1;
+    overflow-y: auto;
+    transition: margin-right 0.3s ease;
 }
 
+body.sidebar-open .main {
+    margin-right: 350px; 
+}
 
 .title {
     display: flex;
@@ -100,6 +105,8 @@ body {
     gap: 20px;
     margin-top: 50px;
     width: 90%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .gallery-item {
@@ -215,6 +222,7 @@ body {
     transform: translateX(100%);
     z-index: 1000;
   }
+
 
   #sidebar .tag {
     display: inline-block;
