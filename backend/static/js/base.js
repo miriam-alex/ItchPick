@@ -94,7 +94,7 @@ input.addEventListener("keydown", function (event) {
 
 function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments, author, price) {
   const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
-  const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}:`
+  const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}`
 
   let spanContents = ""
   tags.forEach(element => {
@@ -111,7 +111,8 @@ function galleryItemTemplate(title, url, image_url, description, rating, rating_
       onclick="openSidebarFromElement(this)">
       <img src="${image_url}" alt="Thumbnail of ${title}">
       <div class="overlay">
-        <b>${title_string}</b> ${description}
+        <b>${title_string}</b> 
+        ${description}
         <span class="tag-span">${spanContents}</span>
       </div>
     </div>`;
