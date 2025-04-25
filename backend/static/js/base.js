@@ -10,11 +10,18 @@ Counter({'Games': 2225, 'Free': 1981, 'Visual Novel': 352, 'Adventure': 268, 'Ac
 const words = ["Grandmas and cafes...", "Cute cats..."];
 const availableTags = ["Visual Novel", "Adventure", "Action", "Featured", "Platformer", "Puzzle", "Simulation", "Role Playing", "Shooter", "Survival", "Strategy", "Educational", "Card Game", "Rhythm", "Fighting", "Racing", "Sports"];
 let availableAuthors = [];
+let availableAuthorsLowercase = []
 
 const selectedTags = new Set();
 
 const dropdown = document.getElementById("tagDropdown");
 const tagsContainer = document.getElementById("tagsContainer");
+const banner = document.getElementById("filter-banner")
+
+// modal 
+const modal = document.getElementById("modal");
+const icon = document.getElementById("filter-image");
+const closeButton = document.querySelector(".close-button");
 const priceInput = document.getElementById('price');
 const priceValue = document.getElementById('price-value');
 const applyFilterButton = document.getElementById('apply-filter-button');
@@ -31,7 +38,7 @@ fetch('/authors')
   })
   .then(data => {
     availableAuthors = [...new Set(data)]
-    console.log(data); 
+    availableAuthorsLowercase = availableAuthors.map(author => author.toLowerCase());
   })
   .catch(error => {
     console.error('There was a problem with the fetch operation:', error);
@@ -39,23 +46,42 @@ fetch('/authors')
 
 // code for price slider
 priceInput.addEventListener('input', function () {
-  priceValue.textContent = this.value;
+  priceValue.textContent = `${this.value}`;
   if (this.value == 25) {
-    priceValue.textContent = "25+"
+    priceValue.textContent = "$25+"
+  } else if (this.value == 0) {
+    priceValue.textContent = "Free"
   }
 });
 
+
+function showBanner() {
+  banner.style.display = "block"; 
+
+  requestAnimationFrame(() => {
+    banner.classList.add("show");
+  });
+
+  setTimeout(() => {
+    banner.classList.remove("show");
+
+    setTimeout(() => {
+      banner.style.display = "none";
+    }, 400); 
+  }, 3000);
+}
 
 applyFilterButton.addEventListener("click", function() {
   selectedDeveloper = authorSearch.value.toLowerCase().trim();
   if (priceValue.value == 25) {
     selectedPrice = null;
   }
-  alert("Filter applied!");
+  modal.classList.add("hidden");
+  showBanner();
 });
 
 function validateInput(value) {
-  return availableAuthors.includes(value.toLowerCase());
+  return availableAuthorsLowercase.includes(value.toLowerCase());
 }
 
 authorSearch.addEventListener("input", () => {
@@ -74,7 +100,8 @@ authorSearch.addEventListener("input", () => {
     li.textContent = match;
     li.addEventListener("click", () => {
       authorSearch.value = match; 
-      suggestionBox.innerHTML = ""; // hide suggestions
+      suggestionBox.innerHTML = "";
+      authorSearch.dispatchEvent(new Event('input'));
     });
     suggestionBox.appendChild(li);
   });
@@ -320,10 +347,6 @@ function unescapeHTML(str) {
 
 // MODAL CODE
 
-const modal = document.getElementById("modal");
-const icon = document.getElementById("filter-image");
-const closeButton = document.querySelector(".close-button");
-
 icon.addEventListener("click", () => {
   modal.classList.remove("hidden");
 });
@@ -332,7 +355,6 @@ closeButton.addEventListener("click", () => {
   modal.classList.add("hidden");
 });
 
-// Optional: Close modal on background click
 modal.addEventListener("click", (e) => {
   if (e.target === modal) {
     modal.classList.add("hidden");
