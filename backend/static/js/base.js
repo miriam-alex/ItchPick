@@ -377,6 +377,11 @@ function openSidebar(game) {
     return `<span class="tag ${extraClass}">${tag}</span>`;
   }).join(" ");
 
+  let scoreHTML = ""; 
+  if (game.score > 0) {
+    scoreHTML += `<p><strong>SVD Score (Boosted):</strong> ${game.score}</p>`
+  }
+
   const topDimHTML = `
   <button onclick="fetchDimensions(${game.id}, '${game.top_query_dim1}', '${game.top_query_dim2}', '${game.top_query_dim3}', '${game.top_query_dim4}', '${game.top_query_dim5}')" class="dim-btn">Show Top 5 Dimensions</button>
   <div id="dims-container-${game.id}"></div>`;
@@ -402,7 +407,7 @@ content.innerHTML = `
   <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
   <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
   <p><strong>Tags:</strong><br>${tagHTML}</p>
-  <p><strong>SVD Score (Boosted):</strong> ${game.score}</p>
+  ${scoreHTML}
   ${topDimHTML}
   ${commentHTML}
   <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
