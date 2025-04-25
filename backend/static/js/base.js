@@ -9,6 +9,7 @@ Counter({'Games': 2225, 'Free': 1981, 'Visual Novel': 352, 'Adventure': 268, 'Ac
 
 const words = ["Grandmas and cafes...", "Cute cats..."];
 const availableTags = ["Visual Novel", "Adventure", "Action", "Featured", "Platformer", "Puzzle", "Simulation", "Role Playing", "Shooter", "Survival", "Strategy", "Educational", "Card Game", "Rhythm", "Fighting", "Racing", "Sports"];
+let availableAuthors = [];
 
 const selectedTags = new Set();
 
@@ -17,22 +18,67 @@ const tagsContainer = document.getElementById("tagsContainer");
 const priceInput = document.getElementById('price');
 const priceValue = document.getElementById('price-value');
 const applyFilterButton = document.getElementById('apply-filter-button');
+const authorSearch = document.getElementById("author-search")
+const suggestionBox = document.getElementById("author-suggestions")
 
 let selectedDeveloper = "";
 let selectedPrice = null;
 
+fetch('/authors')
+  .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.json();
+  })
+  .then(data => {
+    availableAuthors = [...new Set(data)]
+    console.log(data); 
+  })
+  .catch(error => {
+    console.error('There was a problem with the fetch operation:', error);
+  });
 
 // code for price slider
 priceInput.addEventListener('input', function () {
   priceValue.textContent = this.value;
+  if (this.value == 25) {
+    priceValue.textContent = "25+"
+  }
 });
 
+
 applyFilterButton.addEventListener("click", function() {
-  selectedDeveloper = document.getElementById("developer-text-val").value.toLowerCase().trim();
-  selectedPrice = priceValue.value;
+  selectedDeveloper = authorSearch.value.toLowerCase().trim();
+  if (priceValue.value == 25) {
+    selectedPrice = null;
+  }
   alert("Filter applied!");
 });
 
+function validateInput(value) {
+  return availableAuthors.includes(value.toLowerCase());
+}
+
+authorSearch.addEventListener("input", () => {
+  const query = authorSearch.value.trim().toLowerCase();
+  suggestionBox.innerHTML = ""; 
+
+  applyFilterButton.disabled = !validateInput(query);
+  console.log("input invalid: " + !validateInput(query))
+
+  if (query === "") return;
+  
+  const matches = availableAuthors.filter(author => author.toLowerCase().includes(query));
+
+  matches.forEach(match => {
+    const li = document.createElement("li");
+    li.textContent = match;
+    li.addEventListener("click", () => {
+      authorSearch.value = match; 
+      suggestionBox.innerHTML = ""; // hide suggestions
+    });
+    suggestionBox.appendChild(li);
+  });
+});
 
 function populateDropdown() {
   dropdown.innerHTML = '<option disabled selected>+ Add a tag</option>';
@@ -154,7 +200,6 @@ function filterText() {
   // console.log("------------------------------------------")
   // console.log("query: " + document.getElementById("filter-text-val").value)
   const query = document.getElementById("filter-text-val").value.trim()
-  if (query)
   fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
     .then((response) => response.json())
     .then((data) => data.forEach(row => {

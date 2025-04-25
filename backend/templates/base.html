@@ -35,7 +35,10 @@
                 <h2>Additional Filters</h2>
 
                 <p>Developer</p>
-                <input  type="text" placeholder="E.g. angela he" id="developer-text-val">
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="author-search" placeholder="Search developers..." autocomplete="off" />
+                    <ul id="author-suggestions"></ul>
+                </div>
 
                 <div class="price-slider">
                     <label for="price">Maximum Price: $<span id="price-value">1</span></label>

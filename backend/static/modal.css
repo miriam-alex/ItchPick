@@ -53,27 +53,58 @@
     margin: 20px;
 }
 
-#developer-text-val {
+.autocomplete-wrapper {
+    position: relative;
+    width: 100%; 
+  }
+
+#author-search {
     width: 93%;
     height: 40px;
     padding: 0 10px;
     border: 1px solid white;
-    border-radius: 10px; /* rounded corners */
+    /*border-radius: 10px; */
     background-color: transparent;
     color: white;
     font-size: 15px;
     outline: none;
     transition: border-color 0.3s, box-shadow 0.3s;
+
+    list-style: none;
 }
 
-#developer-text-val::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+#author-search::placeholder {
+    color: #ffffff;
 }
 
-#developer-text-val:focus {
+#author-search:focus {
     border-color: #fff;
     box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
+
+#author-suggestions {
+    position: absolute;
+    top: 100%; /* right below the input */
+    left: 0;
+    right: 0;
+    background: rgb(67, 67, 67);
+    border-top: none; /* gets rid of the weird line */
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #author-suggestions li {
+    padding: 8px;
+    cursor: pointer;
+  }
+  
+  #author-suggestions li:hover {
+    background-color: #2b2b2b;
+  }
 
 /* PRICE SLIDER */
 
@@ -145,3 +176,12 @@
     background-color: var(--apply-filters-hover-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
+.apply-button:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    border: 1px solid #aaa;
+    opacity: 0.7;
+  }
+  

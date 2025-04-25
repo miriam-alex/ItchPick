@@ -63,6 +63,7 @@ with open(json_file_path, 'r', encoding="utf-8") as file:
 with open(ui_json_file_path, 'r', encoding="utf-8") as file:
     ui_data = json.load(file)["games"]
 
+all_authors = [entry['author'] for entry in data]
 
 all_words = [get_all_game_text(game) for game in data]
     
@@ -133,6 +134,9 @@ def get_games():
     text = request.args.get("title")
     return json_search(text)
 
+@app.route('/authors')
+def get_authors():
+    return all_authors
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True,host="0.0.0.0",port=5001)
