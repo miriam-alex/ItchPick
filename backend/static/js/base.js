@@ -21,6 +21,20 @@ const banner = document.getElementById("filter-banner")
 let selectedDeveloper = "";
 let selectedPrice = null;
 
+function showLoader() {
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = `
+    <div id="loader" style="display: flex; justify-content: center; align-items: center; height: 200px;">
+      <div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(255, 255, 255, 0.2); border-top: 4px solid #fa5c5c;; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    </div>
+  `;
+}
+
+function hideLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) loader.remove();
+}
+
 function fetchDimensions(gameId, topQueryDim1, topQueryDim2, topQueryDim3, topQueryDim4, topQueryDim5) {
   
   fetch("/dimensions", {
@@ -208,23 +222,33 @@ function filterTextHelper(row) {
   }
 }
 
+
+
 function filterText() {
-  document.getElementById("gallery").innerHTML = ""
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  showLoader(); 
   // console.log("------------------------------------------")
   // console.log("query: " + document.getElementById("filter-text-val").value)
-  const query = document.getElementById("filter-text-val").value.trim()
-  fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
+  const query = document.getElementById("filter-text-val").value.trim();
+  fetch("/episodes?" + new URLSearchParams({ title: query }).toString())
     .then((response) => response.json())
-    .then((data) => data.forEach(row => {
-      // restricting search to just the selected developer, if specified
-      validDeveloper = selectedDeveloper == "" || row.author.toLowerCase() == selectedDeveloper
-      validPrice = selectedPrice == null || row.price <= selectedPrice
+    .then((data) => {
+      data.forEach((row) => {
+        // restricting search to just the selected developer, if specified
+        const validDeveloper = selectedDeveloper === "" || row.author.toLowerCase() === selectedDeveloper;
+        const validPrice = selectedPrice == null || row.price <= selectedPrice;
 
-      // RESTRICTING SEARCH TO JUST THAT DEVELOPER
-      if (validDeveloper && validPrice) {
-        filterTextHelper(row)
-      }
-    }));
+        // RESTRICTING SEARCH TO JUST THAT DEVELOPER
+        if (validDeveloper && validPrice) {
+          filterTextHelper(row);
+        }
+      });
+    })
+    .finally(() => {
+      hideLoader();
+    });
 }
 
 // SEARCH BAR ANIMATION CODE
@@ -292,17 +316,17 @@ function openSidebar(game) {
     commentHTML += `</ul></p>`;
   }
 
-  content.innerHTML = `
-    <h2>${game.title}</h2>
-    <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
-    <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
-    <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
-    <p><strong>Tags:</strong><br>${tagHTML}</p>
-    <p><strong>SVD Score (Boosted):</strong> ${(game.score) ? `${game.score}` : "No SVD Score"}</p>
-    ${topDimHTML}
-    ${commentHTML}
-    <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
-  `;
+content.innerHTML = `
+  <h2>${game.title}</h2>
+  <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
+  <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
+  <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
+  <p><strong>Tags:</strong><br>${tagHTML}</p>
+  <p><strong>SVD Score (Boosted):</strong> ${game.score}</p>
+  ${topDimHTML}
+  ${commentHTML}
+  <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
+`;
 
     sidebar.classList.remove("hidden");
     sidebar.classList.add("visible");
