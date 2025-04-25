@@ -70,7 +70,7 @@ all_words = [get_all_game_text(game) for game in data]
 vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .7, min_df = 1)
 td_matrix = vectorizer.fit_transform(all_words)
     
-docs_compressed, s, words_compressed = svds(td_matrix, k=200)
+docs_compressed, s, words_compressed = svds(td_matrix, k=100)
 words_compressed = words_compressed.transpose()
     
 word_to_index = vectorizer.vocabulary_
