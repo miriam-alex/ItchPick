@@ -212,11 +212,18 @@ function openSidebar(game) {
   }).join(" ");
 
   let commentHTML = "";
-    if (game.recent_comments) {
-      commentHTML = `<p><strong>Top Comments:</strong><br><ul>`;
-      commentHTML += `<li style="margin-bottom: 0.5em;">${game.recent_comments}</li>`;
-      commentHTML += `</ul></p>`;
-}
+  if (game.recent_comments && game.recent_comments.length > 0) {
+    const topComments = [...game.recent_comments]
+      .sort((a, b) => b[1] - a[1]) 
+      .slice(0, 3); 
+    commentHTML = `<p><strong>Top Comments:</strong><br><ul>`;
+    topComments.forEach(commentPair => {
+      const commentText = commentPair[0];
+      const score = commentPair[1];
+      commentHTML += `<li style="margin-bottom: 0.5em;">${commentText} <span style="color: gray;">(Upvotes: ${score})</span></li>`;
+    });
+    commentHTML += `</ul></p>`;
+  }
 
 content.innerHTML = `
   <h2>${game.title}</h2>
