@@ -70,7 +70,7 @@ all_words = [get_all_game_text(game) for game in data]
 vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .7, min_df = 1)
 td_matrix = vectorizer.fit_transform(all_words)
     
-docs_compressed, s, words_compressed = svds(td_matrix, k=50)
+docs_compressed, s, words_compressed = svds(td_matrix, k=200)
 words_compressed = words_compressed.transpose()
     
 word_to_index = vectorizer.vocabulary_
@@ -158,7 +158,6 @@ def get_games():
 @app.route("/dimensions", methods=["POST"])
 def get_dimensions():
     game_id = request.json.get("game_id")
-    print(game_id)
     top_dim = get_top_dim(docs_compressed_normed[game_id])
     return jsonify({"dim1": " | ".join(top_dim[0]),
                     "dim2": " | ".join(top_dim[1]),

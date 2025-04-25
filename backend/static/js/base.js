@@ -373,7 +373,7 @@ content.innerHTML = `
   <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
   <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
   <p><strong>Tags:</strong><br>${tagHTML}</p>
-  <p><strong>SVD Score:</strong> ${(game.score) ? `${game.score}` : "No SVD Score"}</p>
+  <p><strong>SVD Score (Boosted):</strong> ${(game.score) ? `${game.score}` : "No SVD Score"}</p>
   ${topDimHTML}
   ${commentHTML}
   <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
