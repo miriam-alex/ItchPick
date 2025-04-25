@@ -46,9 +46,9 @@ fetch('/authors')
 
 // code for price slider
 priceInput.addEventListener('input', function () {
-  priceValue.textContent = `${this.value}`;
+  priceValue.textContent = "$" + this.value;
   if (this.value == 25) {
-    priceValue.textContent = "$25+"
+    priceValue.textContent = "No limit"
   } else if (this.value == 0) {
     priceValue.textContent = "Free"
   }
@@ -75,6 +75,8 @@ applyFilterButton.addEventListener("click", function() {
   selectedDeveloper = authorSearch.value.toLowerCase().trim();
   if (priceValue.value == 25) {
     selectedPrice = null;
+  } else {
+    selectedPrice = priceInput.value
   }
   modal.classList.add("hidden");
   showBanner();
@@ -236,6 +238,9 @@ function filterText() {
 
       // RESTRICTING SEARCH TO JUST THAT DEVELOPER
       if (validDeveloper && validPrice) {
+        console.log("selected developer: " +  selectedDeveloper)
+        console.log("selected max price: " + selectedPrice)
+        console.log(row)
         filterTextHelper(row)
       }
     }));
