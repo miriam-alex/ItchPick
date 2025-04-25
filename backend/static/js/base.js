@@ -31,6 +31,20 @@ const suggestionBox = document.getElementById("author-suggestions")
 let selectedDeveloper = "";
 let selectedPrice = null;
 
+function showLoader() {
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = `
+    <div id="loader" style="display: flex; justify-content: center; align-items: center; height: 200px;">
+      <div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(255, 255, 255, 0.2); border-top: 4px solid #fa5c5c;; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    </div>
+  `;
+}
+
+function hideLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) loader.remove();
+}
+
 function fetchDimensions(gameId, topQueryDim1, topQueryDim2, topQueryDim3, topQueryDim4, topQueryDim5) {
   
   fetch("/dimensions", {
@@ -103,9 +117,9 @@ fetch('/authors')
 
 // code for price slider
 priceInput.addEventListener('input', function () {
-  priceValue.textContent = `${this.value}`;
+  priceValue.textContent = "$" + this.value;
   if (this.value == 25) {
-    priceValue.textContent = "$25+"
+    priceValue.textContent = "No limit"
   } else if (this.value == 0) {
     priceValue.textContent = "Free"
   }
@@ -132,6 +146,8 @@ applyFilterButton.addEventListener("click", function() {
   selectedDeveloper = authorSearch.value.toLowerCase().trim();
   if (priceValue.value == 25) {
     selectedPrice = null;
+  } else {
+    selectedPrice = priceInput.value
   }
   modal.classList.add("hidden");
   showBanner();
@@ -287,23 +303,36 @@ function filterTextHelper(row) {
   }
 }
 
+
+
 function filterText() {
-  document.getElementById("gallery").innerHTML = ""
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  showLoader(); 
   // console.log("------------------------------------------")
   // console.log("query: " + document.getElementById("filter-text-val").value)
-  const query = document.getElementById("filter-text-val").value.trim()
-  fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
+  const query = document.getElementById("filter-text-val").value.trim();
+  fetch("/episodes?" + new URLSearchParams({ title: query }).toString())
     .then((response) => response.json())
-    .then((data) => data.forEach(row => {
-      // restricting search to just the selected developer, if specified
-      validDeveloper = selectedDeveloper == "" || row.author.toLowerCase() == selectedDeveloper
-      validPrice = selectedPrice == null || row.price <= selectedPrice
+    .then((data) => {
+      data.forEach((row) => {
+        // restricting search to just the selected developer, if specified
+        const validDeveloper = selectedDeveloper === "" || row.author.toLowerCase() === selectedDeveloper;
+        const validPrice = selectedPrice == null || row.price <= selectedPrice;
 
-      // RESTRICTING SEARCH TO JUST THAT DEVELOPER
-      if (validDeveloper && validPrice) {
-        filterTextHelper(row)
-      }
-    }));
+        // RESTRICTING SEARCH TO JUST THAT DEVELOPER
+        if (validDeveloper && validPrice) {
+          console.log("selected developer: " +  selectedDeveloper)
+          console.log("selected max price: " + selectedPrice)
+          console.log(row)
+          filterTextHelper(row);
+        }
+      });
+    })
+    .finally(() => {
+      hideLoader();
+    });
 }
 
 // SEARCH BAR ANIMATION CODE

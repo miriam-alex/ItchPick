@@ -8,6 +8,9 @@
     rel="stylesheet">
 
 <body>
+    <div id="loading-spinner" class="hidden">
+        <div class="spinner"></div>
+    </div>
     <div class="main">
 
         <div class="top-text">
@@ -42,8 +45,8 @@
                 </div>
 
                 <div class="price-slider">
-                    <label for="price">Maximum Price: <span id="price-value">1</span></label>
-                    <input type="range" id="price" min="0" max="25" value="1" />
+                    <label for="price">Maximum Price: <span id="price-value">Free</span></label>
+                    <input type="range" id="price" min="0" max="25" value="0" />
                     <div class="range-labels">
                         <span>$0</span>
                         <span>$25+</span>
