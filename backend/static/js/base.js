@@ -332,6 +332,7 @@ function openSidebar(game) {
 content.innerHTML = `
   <h2>${game.title}</h2>
   <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
+  <p><strong>Price:</strong> ${(game.price == 0 ? "Free" : "$" + game.price)}</p>
   <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
   <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
   <p><strong>Tags:</strong><br>${tagHTML}</p>
