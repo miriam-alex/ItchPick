@@ -1,75 +1,79 @@
 <!doctype html>
-<title>{% block title %}{% endblock %} - Flaskr</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='modal.css') }}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&family=Open+Sans:wght@500&display=swap"
-    rel="stylesheet">
-
-<body>
-    <div id="loading-spinner" class="hidden">
-        <div class="spinner"></div>
-    </div>
-    <div class="main">
-
-        <div class="top-text">
-            <div class="title">
-                <h1 id="itch-picks-title">ItchPick</h1>
-            </div>
-            <div class="input">
-                <div class="input-box" onclick="sendFocus()">
-                    <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                    <input  type="text" placeholder="" id="filter-text-val">
-                <img id="filter-image" src="{{ url_for('static', filename='images/filter.png') }}" />
-                </div>
-                <div id="filter-banner">Filter applied</div>
-                <div class="tags-container" id="tagsContainer">
-                    <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
-                        <option disabled selected>+ Add Tag</option>
-                    </select>
-                </div>
-            </div>
+<html lang="en">
+    <head>
+        <title>{% block title %}{% endblock %} - Flaskr</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='modal.css') }}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+            rel="stylesheet">
+    </head>
+    <body>
+        <div id="loading-spinner" class="hidden">
+            <div class="spinner"></div>
         </div>
+        <div class="main">
 
-        <!-- Modal structure -->
-        <div id="modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-button">&times;</span>
-                <h2>Additional Filters</h2>
-
-                <p>Developer</p>
-                <div class="autocomplete-wrapper">
-                    <input type="text" id="author-search" placeholder="Search developers..." autocomplete="off" />
-                    <ul id="author-suggestions"></ul>
+            <div class="top-text">
+                <div class="title">
+                    <h1 id="itch-picks-title">ItchPick</h1>
                 </div>
-
-                <div class="price-slider">
-                    <label for="price">Maximum Price: <span id="price-value">Free</span></label>
-                    <input type="range" id="price" min="0" max="25" value="0" />
-                    <div class="range-labels">
-                        <span>$0</span>
-                        <span>$25+</span>
+                <div class="input">
+                    <div class="input-box" onclick="sendFocus()">
+                        <img src="{{ url_for('static', filename='images/mag.png') }}" />
+                        <input  type="text" placeholder="" id="filter-text-val">
+                    <img id="filter-image" src="{{ url_for('static', filename='images/filter.png') }}" />
+                    </div>
+                    <div id="filter-banner">Filter applied</div>
+                    <div class="tags-container" id="tagsContainer">
+                        <select class="tag-dropdown" id="tagDropdown" onchange="addSelectedTag(this)">
+                            <option disabled selected>+ Add Tag</option>
+                        </select>
                     </div>
                 </div>
+            </div>
 
-                <div class="modal-footer">
-                    <button id="apply-filter-button" class="apply-button">Apply Filters</button>
+            <!-- Modal structure -->
+            <div id="modal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <h2>Additional Filters</h2>
+
+                    <p>Developer</p>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="author-search" placeholder="Search developers..." autocomplete="off" />
+                        <ul id="author-suggestions"></ul>
+                    </div>
+
+                    <div class="price-slider">
+                        <label for="price">Maximum Price: <span id="price-value">Free</span></label>
+                        <input type="range" id="price" min="0" max="25" value="0" />
+                        <div class="range-labels">
+                            <span>$0</span>
+                            <span>$25+</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button id="apply-filter-button" class="apply-button">Apply Filters</button>
+                    </div>
                 </div>
             </div>
+
+
+            <div class="gallery" id="gallery">
+            </div>
+
         </div>
 
+        <div id="sidebar" class="sidebar hidden">
+            <button class="close-btn" onclick="closeSidebar()">×</button>
+            <div id="sidebar-content"></div>
+        </div>  
 
-        <div class="gallery" id="gallery">
-        </div>
+        <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
 
-    </div>
-
-    <div id="sidebar" class="sidebar hidden">
-        <button class="close-btn" onclick="closeSidebar()">×</button>
-        <div id="sidebar-content"></div>
-    </div>  
-
-    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
-
-</body>
+    </body>
+</html>

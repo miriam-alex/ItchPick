@@ -135,11 +135,11 @@ def json_search(query):
             "recent_comments": ui_data[i]["recent_comments"] if "recent_comments" in ui_data[i] and len(ui_data[i]["recent_comments"]) > 0 else None,
             "author": ui_data[i]["author"],
             "price": data[i]["price"],
-            "top_query_dim1": " | ".join(top_query_dim[0]),
-            "top_query_dim2": " | ".join(top_query_dim[1]),
-            "top_query_dim3": " | ".join(top_query_dim[2]),
-            "top_query_dim4": " | ".join(top_query_dim[3]),
-            "top_query_dim5": " | ".join(top_query_dim[4])
+            "top_query_dim1": ", ".join(top_query_dim[0]),
+            "top_query_dim2": ", ".join(top_query_dim[1]),
+            "top_query_dim3": ", ".join(top_query_dim[2]),
+            "top_query_dim4": ", ".join(top_query_dim[3]),
+            "top_query_dim5": ", ".join(top_query_dim[4])
         }
         for i, score in boosted_results
     ]
@@ -159,11 +159,11 @@ def get_games():
 def get_dimensions():
     game_id = request.json.get("game_id")
     top_dim = get_top_dim(docs_compressed_normed[game_id])
-    return jsonify({"dim1": " | ".join(top_dim[0]),
-                    "dim2": " | ".join(top_dim[1]),
-                    "dim3": " | ".join(top_dim[2]),
-                    "dim4": " | ".join(top_dim[3]),
-                    "dim5": " | ".join(top_dim[4])
+    return jsonify({"dim1": ", ".join(top_dim[0]),
+                    "dim2": ", ".join(top_dim[1]),
+                    "dim3": ", ".join(top_dim[2]),
+                    "dim4": ", ".join(top_dim[3]),
+                    "dim5": ", ".join(top_dim[4])
                     })
 @app.route('/authors')
 def get_authors():

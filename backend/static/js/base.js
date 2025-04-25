@@ -232,6 +232,7 @@ function filterText() {
   // console.log("------------------------------------------")
   // console.log("query: " + document.getElementById("filter-text-val").value)
   const query = document.getElementById("filter-text-val").value.trim();
+  let count = 0;
   fetch("/episodes?" + new URLSearchParams({ title: query }).toString())
     .then((response) => response.json())
     .then((data) => {
@@ -243,8 +244,16 @@ function filterText() {
         // RESTRICTING SEARCH TO JUST THAT DEVELOPER
         if (validDeveloper && validPrice) {
           filterTextHelper(row);
+          count++;
         }
       });
+      if (count === 0) {
+        const gallery = document.getElementById("gallery");
+        gallery.innerHTML = `
+          <div style="text-align: center; padding: 40px; font-size: 1.2em; color: #999;">
+            No results found
+          </div>`;
+      }
     })
     .finally(() => {
       hideLoader();
@@ -323,12 +332,13 @@ function openSidebar(game) {
 content.innerHTML = `
   <h2>${game.title}</h2>
   <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
+  <p><strong>Price:</strong> ${(game.price == 0 ? "Free" : "$" + game.price)}</p>
   <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
   <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
   <p><strong>Tags:</strong><br>${tagHTML}</p>
   ${scoreHTML}
-  ${topDimHTML}
   ${commentHTML}
+  ${topDimHTML}
   <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
 `;
 
