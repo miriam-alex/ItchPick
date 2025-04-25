@@ -336,8 +336,8 @@ content.innerHTML = `
   <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
   <p><strong>Tags:</strong><br>${tagHTML}</p>
   ${scoreHTML}
-  ${topDimHTML}
   ${commentHTML}
+  ${topDimHTML}
   <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
 `;
 
