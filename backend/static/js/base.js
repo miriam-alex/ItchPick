@@ -18,16 +18,6 @@ const dropdown = document.getElementById("tagDropdown");
 const tagsContainer = document.getElementById("tagsContainer");
 const banner = document.getElementById("filter-banner")
 
-// modal 
-const modal = document.getElementById("modal");
-const icon = document.getElementById("filter-image");
-const closeButton = document.querySelector(".close-button");
-const priceInput = document.getElementById('price');
-const priceValue = document.getElementById('price-value');
-const applyFilterButton = document.getElementById('apply-filter-button');
-const authorSearch = document.getElementById("author-search")
-const suggestionBox = document.getElementById("author-suggestions")
-
 let selectedDeveloper = "";
 let selectedPrice = null;
 
@@ -101,6 +91,323 @@ function fetchDimensions(gameId, topQueryDim1, topQueryDim2, topQueryDim3, topQu
     })
     .catch(err => console.error("Error fetching dimensions:", err));
 }
+
+// TAG SYSTEM CODE ----------------------------------------------------------
+
+function populateDropdown() {
+  dropdown.innerHTML = '<option disabled selected>+ Add a tag</option>';
+  availableTags.forEach(tag => {
+    if (!selectedTags.has(tag)) {
+      const option = document.createElement("option");
+      option.value = tag;
+      option.textContent = tag;
+      dropdown.appendChild(option);
+    }
+  });
+
+  if (dropdown.options.length === 1) {
+    dropdown.style.visibility = "hidden";
+  } else {
+    dropdown.disabled = false;
+    dropdown.style.visibility = "visible"
+  }
+}
+
+function addSelectedTag(selectElement) {
+  const tagText = selectElement.value;
+
+  if (!tagText || selectedTags.has(tagText)) {
+    return;
+  }
+
+  const tagEl = document.createElement("span");
+  tagEl.className = "tag";
+  tagEl.innerHTML = `${tagText}<button class="remove-tag" onclick="removeTag(this)">×</button>`;
+
+  tagsContainer.insertBefore(tagEl, dropdown);
+  selectedTags.add(tagText);
+  populateDropdown();
+}
+
+function removeTag(button) {
+  const tagEl = button.parentElement;
+  const tagText = tagEl.textContent.slice(0, -1).trim();
+  selectedTags.delete(tagText);
+  tagEl.remove();
+  populateDropdown();
+}
+
+populateDropdown();
+
+// TRIGGERING SEARCH ON KEYPRESS
+
+const input = document.getElementById("filter-text-val");
+
+input.addEventListener("keydown", function (event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    filterText();
+  }
+});
+
+// GENERATING GALLERY RESULTS -------------------------------
+
+function roundToOneDecimal(num)
+{
+  return Math.round(num * 10) / 10
+}
+
+function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments, author, price, score, id, top_query_dim1, top_query_dim2, top_query_dim3, top_query_dim4, top_query_dim5) {
+  const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
+  const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}`
+
+  let spanContents = ""
+  tags.forEach(element => {
+    const tagEl = `<span class="tag"> ${element} </span>`
+    spanContents += tagEl + " "
+  });
+
+  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating, author, price, score, id, top_query_dim1, top_query_dim2, top_query_dim3, top_query_dim4, top_query_dim5};
+  // console.log("Rendering game:", gameObj);
+
+  return `
+    <div class="gallery-item" 
+      data-game='${escapeHTML(JSON.stringify(gameObj))}' 
+      onclick="openSidebarFromElement(this)">
+      <img src="${image_url}" alt="Thumbnail of ${title}">
+      <div class="overlay">
+        <b>${title_string}</b> 
+        ${description}
+        <span class="tag-span">${spanContents}</span>
+        ${score ? `<p><strong>Score:</strong> ${roundToOneDecimal(score)}</p>` : ""}
+      </div>
+    </div>`;
+}
+
+function sendFocus() {
+  document.getElementById('filter-text-val').focus()
+}
+
+function setsOverlap(set1, set2) {
+  return [...set1].some(element => set2.has(element));
+}
+
+function filterTextHelper(row) {
+  var rowTagSet = new Set(row.tags)
+  if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
+    const tempDiv = document.createElement("div");
+    if (row.image_url == null) {
+      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg";
+    }
+    tempDiv.innerHTML = galleryItemTemplate(
+      row.title,
+      row.url,
+      row.image_url,
+      row.description,
+      row.rating,
+      row.rating_count,
+      row.tags,
+      row.recent_comments,
+      row.author,
+      row.price,
+      row.score,
+      row.id,
+      row.top_query_dim1,
+      row.top_query_dim2,
+      row.top_query_dim3,
+      row.top_query_dim4,
+      row.top_query_dim5,
+    );
+    document.getElementById("gallery").appendChild(tempDiv);
+  }
+}
+
+
+
+function filterText() {
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  showLoader(); 
+  // console.log("------------------------------------------")
+  // console.log("query: " + document.getElementById("filter-text-val").value)
+  const query = document.getElementById("filter-text-val").value.trim();
+  fetch("/episodes?" + new URLSearchParams({ title: query }).toString())
+    .then((response) => response.json())
+    .then((data) => {
+      data.forEach((row) => {
+        // restricting search to just the selected developer, if specified
+        const validDeveloper = selectedDeveloper === "" || row.author.toLowerCase() === selectedDeveloper;
+        const validPrice = selectedPrice == null || row.price <= selectedPrice;
+
+        // RESTRICTING SEARCH TO JUST THAT DEVELOPER
+        if (validDeveloper && validPrice) {
+          filterTextHelper(row);
+        }
+      });
+    })
+    .finally(() => {
+      hideLoader();
+    });
+}
+
+// SEARCH BAR ANIMATION CODE
+
+const searchBar = document.getElementById('filter-text-val');
+
+let wordIndex = 0;
+let charIndex = 0;
+let isDeleting = false;
+
+function typeEffect() {
+  const currentWord = words[wordIndex];
+  let displayedText = currentWord.substring(0, charIndex);
+
+  searchBar.setAttribute("placeholder", displayedText);
+
+  if (!isDeleting && charIndex < currentWord.length) {
+    charIndex++;
+    setTimeout(typeEffect, 100);
+  } else if (isDeleting && charIndex > 0) {
+    charIndex--;
+    setTimeout(typeEffect, 50);
+  } else {
+    isDeleting = !isDeleting;
+    if (!isDeleting) wordIndex = (wordIndex + 1) % words.length;
+    setTimeout(typeEffect, 1000);
+  }
+}
+
+typeEffect();
+
+// SIDEBAR FUNCTIONS
+
+function openSidebar(game) {
+  document.body.classList.add("sidebar-open");
+  const sidebar = document.getElementById("sidebar");
+  const content = document.getElementById("sidebar-content")
+
+  const tagHTML = game.tags.map(tag => {
+    const isSelected = selectedTags.has(tag);
+    const extraClass = isSelected ? "tag-selected" : "";
+    return `<span class="tag ${extraClass}">${tag}</span>`;
+  }).join(" ");
+
+  let scoreHTML = ""; 
+  if (game.score > 0) {
+    scoreHTML += `<p><strong>SVD Score (Boosted):</strong> ${game.score}</p>`
+  }
+  const showDimText = "Show Top 5 Dimensions"
+  const hideDimText = "Hide Dimensions"
+  const divID = `dims-container-${game.id}`
+
+  const topDimHTML = `
+  <button onclick="fetchDimensions(${game.id}, '${game.top_query_dim1}', '${game.top_query_dim2}', '${game.top_query_dim3}', '${game.top_query_dim4}', '${game.top_query_dim5}')" id="top-dim-btn" class="dim-btn">${showDimText}</button>
+  <div id="${divID}"></div>`;
+
+
+  let commentHTML = "";
+  if (game.recent_comments && game.recent_comments.length > 0) {
+    const topComments = [...game.recent_comments]
+      .sort((a, b) => b[1] - a[1]) 
+      .slice(0, 3); 
+    commentHTML = `<p><strong>Top Comments:</strong><br><ul>`;
+    topComments.forEach(commentPair => {
+      const commentText = commentPair[0];
+      const score = commentPair[1];
+      commentHTML += `<li style="margin-bottom: 0.5em;">${commentText} <span style="color: gray;">(Upvotes: ${score})</span></li>`;
+    });
+    commentHTML += `</ul></p>`;
+  }
+
+content.innerHTML = `
+  <h2>${game.title}</h2>
+  <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
+  <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
+  <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
+  <p><strong>Tags:</strong><br>${tagHTML}</p>
+  ${scoreHTML}
+  ${topDimHTML}
+  ${commentHTML}
+  <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
+`;
+
+    sidebar.classList.remove("hidden");
+    sidebar.classList.add("visible");
+
+    const topDimensionsButton = document.getElementById("top-dim-btn");
+    const topDimensionsDiv = document.getElementById(divID);
+
+    topDimensionsButton.addEventListener("click", () => {
+      if (topDimensionsButton.textContent == showDimText) {
+        topDimensionsButton.textContent = hideDimText
+        topDimensionsDiv.style.display = "block";
+      } else {
+        topDimensionsButton.textContent = showDimText
+        topDimensionsDiv.style.display = "none"
+      }
+    });
+}
+
+function openSidebarFromElement(el) {
+  try {
+    const game = JSON.parse(unescapeHTML(el.dataset.game));
+    openSidebar(game);
+  } catch (err) {
+    console.error("Failed to parse game data:", err);
+  }
+}
+
+function closeSidebar() {
+  document.body.classList.remove("sidebar-open");
+
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.remove("visible");
+  sidebar.classList.add("hidden");
+}
+
+// ESCAPE HELPERS
+
+function escapeHTML(str) {
+  return str.replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+}
+
+function unescapeHTML(str) {
+  return str.replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&amp;/g, "&");
+}
+
+// --------------- MODAL ----------------------------------
+
+const suggestionBox = document.getElementById("author-suggestions")
+const modal = document.getElementById("modal");
+const icon = document.getElementById("filter-image");
+const closeButton = document.querySelector(".close-button");
+const priceInput = document.getElementById('price');
+const priceValue = document.getElementById('price-value');
+const applyFilterButton = document.getElementById('apply-filter-button');
+const authorSearch = document.getElementById("author-search")
+
+icon.addEventListener("click", () => {
+    modal.classList.remove("hidden");
+  });
+  
+  closeButton.addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+  
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.classList.add("hidden");
+    }
+  });
 
 fetch('/authors')
   .then(response => {
@@ -178,292 +485,4 @@ authorSearch.addEventListener("input", () => {
     });
     suggestionBox.appendChild(li);
   });
-});
-
-function populateDropdown() {
-  dropdown.innerHTML = '<option disabled selected>+ Add a tag</option>';
-  availableTags.forEach(tag => {
-    if (!selectedTags.has(tag)) {
-      const option = document.createElement("option");
-      option.value = tag;
-      option.textContent = tag;
-      dropdown.appendChild(option);
-    }
-  });
-
-  if (dropdown.options.length === 1) {
-    dropdown.style.visibility = "hidden";
-  } else {
-    dropdown.disabled = false;
-    dropdown.style.visibility = "visible"
-  }
-}
-
-function addSelectedTag(selectElement) {
-  const tagText = selectElement.value;
-
-  if (!tagText || selectedTags.has(tagText)) {
-    return;
-  }
-
-  const tagEl = document.createElement("span");
-  tagEl.className = "tag";
-  tagEl.innerHTML = `${tagText}<button class="remove-tag" onclick="removeTag(this)">×</button>`;
-
-  tagsContainer.insertBefore(tagEl, dropdown);
-  selectedTags.add(tagText);
-  populateDropdown();
-}
-
-function removeTag(button) {
-  const tagEl = button.parentElement;
-  const tagText = tagEl.textContent.slice(0, -1).trim();
-  selectedTags.delete(tagText);
-  tagEl.remove();
-  populateDropdown();
-}
-
-populateDropdown();
-
-// TRIGGERING SEARCH ON KEYPRESS
-
-const input = document.getElementById("filter-text-val");
-
-input.addEventListener("keydown", function (event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    filterText();
-  }
-});
-
-// GENERATING RESULTS
-
-function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments, author, price, score, id, top_query_dim1, top_query_dim2, top_query_dim3, top_query_dim4, top_query_dim5) {
-  const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
-  const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}`
-
-  let spanContents = ""
-  tags.forEach(element => {
-    const tagEl = `<span class="tag"> ${element} </span>`
-    spanContents += tagEl + " "
-  });
-
-  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating, author, price, score, id, top_query_dim1, top_query_dim2, top_query_dim3, top_query_dim4, top_query_dim5};
-  console.log("Rendering game:", gameObj);
-
-  return `
-    <div class="gallery-item" 
-      data-game='${escapeHTML(JSON.stringify(gameObj))}' 
-      onclick="openSidebarFromElement(this)">
-      <img src="${image_url}" alt="Thumbnail of ${title}">
-      <div class="overlay">
-        <b>${title_string}</b> 
-        ${description}
-        <span class="tag-span">${spanContents}</span>
-        ${score ? `<p><strong>Score:</strong> ${score}</p>` : ""}
-      </div>
-    </div>`;
-}
-
-function sendFocus() {
-  document.getElementById('filter-text-val').focus()
-}
-
-function setsOverlap(set1, set2) {
-  return [...set1].some(element => set2.has(element));
-}
-
-function filterTextHelper(row) {
-  var rowTagSet = new Set(row.tags)
-  if (selectedTags.size == 0 || setsOverlap(rowTagSet, selectedTags)) {
-    const tempDiv = document.createElement("div");
-    if (row.image_url == null) {
-      row.image_url = "https://static.itch.io/images/itchio-textless-white.svg";
-    }
-    tempDiv.innerHTML = galleryItemTemplate(
-      row.title,
-      row.url,
-      row.image_url,
-      row.description,
-      row.rating,
-      row.rating_count,
-      row.tags,
-      row.recent_comments,
-      row.author,
-      row.price,
-      row.score,
-      row.id,
-      row.top_query_dim1,
-      row.top_query_dim2,
-      row.top_query_dim3,
-      row.top_query_dim4,
-      row.top_query_dim5,
-    );
-    document.getElementById("gallery").appendChild(tempDiv);
-  }
-}
-
-
-
-function filterText() {
-  const gallery = document.getElementById("gallery");
-  gallery.innerHTML = "";
-
-  showLoader(); 
-  // console.log("------------------------------------------")
-  // console.log("query: " + document.getElementById("filter-text-val").value)
-  const query = document.getElementById("filter-text-val").value.trim();
-  fetch("/episodes?" + new URLSearchParams({ title: query }).toString())
-    .then((response) => response.json())
-    .then((data) => {
-      data.forEach((row) => {
-        // restricting search to just the selected developer, if specified
-        const validDeveloper = selectedDeveloper === "" || row.author.toLowerCase() === selectedDeveloper;
-        const validPrice = selectedPrice == null || row.price <= selectedPrice;
-
-        // RESTRICTING SEARCH TO JUST THAT DEVELOPER
-        if (validDeveloper && validPrice) {
-          console.log("selected developer: " +  selectedDeveloper)
-          console.log("selected max price: " + selectedPrice)
-          console.log(row)
-          filterTextHelper(row);
-        }
-      });
-    })
-    .finally(() => {
-      hideLoader();
-    });
-}
-
-// SEARCH BAR ANIMATION CODE
-
-const searchBar = document.getElementById('filter-text-val');
-
-let wordIndex = 0;
-let charIndex = 0;
-let isDeleting = false;
-
-function typeEffect() {
-  const currentWord = words[wordIndex];
-  let displayedText = currentWord.substring(0, charIndex);
-
-  searchBar.setAttribute("placeholder", displayedText);
-
-  if (!isDeleting && charIndex < currentWord.length) {
-    charIndex++;
-    setTimeout(typeEffect, 100);
-  } else if (isDeleting && charIndex > 0) {
-    charIndex--;
-    setTimeout(typeEffect, 50);
-  } else {
-    isDeleting = !isDeleting;
-    if (!isDeleting) wordIndex = (wordIndex + 1) % words.length;
-    setTimeout(typeEffect, 1000);
-  }
-}
-
-typeEffect();
-
-// SIDEBAR FUNCTIONS
-
-function openSidebar(game) {
-  document.body.classList.add("sidebar-open");
-  const sidebar = document.getElementById("sidebar");
-  const content = document.getElementById("sidebar-content");
-
-  const tagHTML = game.tags.map(tag => {
-    const isSelected = selectedTags.has(tag);
-    const extraClass = isSelected ? "tag-selected" : "";
-    return `<span class="tag ${extraClass}">${tag}</span>`;
-  }).join(" ");
-
-  let scoreHTML = ""; 
-  if (game.score > 0) {
-    scoreHTML += `<p><strong>SVD Score (Boosted):</strong> ${game.score}</p>`
-  }
-
-  const topDimHTML = `
-  <button onclick="fetchDimensions(${game.id}, '${game.top_query_dim1}', '${game.top_query_dim2}', '${game.top_query_dim3}', '${game.top_query_dim4}', '${game.top_query_dim5}')" class="dim-btn">Show Top 5 Dimensions</button>
-  <div id="dims-container-${game.id}"></div>`;
-
-
-  let commentHTML = "";
-  if (game.recent_comments && game.recent_comments.length > 0) {
-    const topComments = [...game.recent_comments]
-      .sort((a, b) => b[1] - a[1]) 
-      .slice(0, 3); 
-    commentHTML = `<p><strong>Top Comments:</strong><br><ul>`;
-    topComments.forEach(commentPair => {
-      const commentText = commentPair[0];
-      const score = commentPair[1];
-      commentHTML += `<li style="margin-bottom: 0.5em;">${commentText} <span style="color: gray;">(Upvotes: ${score})</span></li>`;
-    });
-    commentHTML += `</ul></p>`;
-  }
-
-content.innerHTML = `
-  <h2>${game.title}</h2>
-  <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
-  <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
-  <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
-  <p><strong>Tags:</strong><br>${tagHTML}</p>
-  ${scoreHTML}
-  ${topDimHTML}
-  ${commentHTML}
-  <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
-`;
-
-  sidebar.classList.remove("hidden");
-  sidebar.classList.add("visible");
-}
-
-function openSidebarFromElement(el) {
-  try {
-    const game = JSON.parse(unescapeHTML(el.dataset.game));
-    openSidebar(game);
-  } catch (err) {
-    console.error("Failed to parse game data:", err);
-  }
-}
-
-function closeSidebar() {
-  document.body.classList.remove("sidebar-open");
-
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.remove("visible");
-  sidebar.classList.add("hidden");
-}
-
-// ESCAPE HELPERS
-
-function escapeHTML(str) {
-  return str.replace(/&/g, "&amp;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
-}
-
-function unescapeHTML(str) {
-  return str.replace(/&quot;/g, '"')
-            .replace(/&#039;/g, "'")
-            .replace(/&lt;/g, "<")
-            .replace(/&gt;/g, ">")
-            .replace(/&amp;/g, "&");
-}
-
-// MODAL CODE
-
-icon.addEventListener("click", () => {
-  modal.classList.remove("hidden");
-});
-
-closeButton.addEventListener("click", () => {
-  modal.classList.add("hidden");
-});
-
-modal.addEventListener("click", (e) => {
-  if (e.target === modal) {
-    modal.classList.add("hidden");
-  }
 });

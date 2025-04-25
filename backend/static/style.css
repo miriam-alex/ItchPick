@@ -244,7 +244,6 @@ body.sidebar-open .main {
 }
 
 .tag .remove-tag {
-    margin-left: 8px;
     background: none;
     border: none;
     font-weight: bold;
@@ -262,9 +261,9 @@ body.sidebar-open .main {
     color: var(--tag-dropdown-color);
     border-radius: 20px;
     padding: 6px 12px;
-    font-size: 14px;
     display: flex;
     align-items: center;
+    font-size: 14px;
 }
 
 .tag-dropdown option:disabled {
@@ -345,3 +344,15 @@ body.sidebar-open .main {
   #filter-banner.show {
     opacity: 1;
   }
+
+.dim-btn {
+    appearance: none;
+    border: none;
+    background-color: var(--tag-dropdown-background-color);
+    color: var(--tag-dropdown-color);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
