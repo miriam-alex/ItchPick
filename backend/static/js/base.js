@@ -21,6 +21,62 @@ const applyFilterButton = document.getElementById('apply-filter-button');
 let selectedDeveloper = "";
 let selectedPrice = null;
 
+function fetchDimensions(gameId, topQueryDim1, topQueryDim2, topQueryDim3, topQueryDim4, topQueryDim5) {
+  
+  fetch("/dimensions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ game_id: gameId })
+  })
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById(`dims-container-${gameId}`);
+      const gameDimHTML1 = 
+        data.dim1 && data.dim1.length > 0
+        ? `<p><strong>Top Words in Game's Top Dimension:</strong> ${data.dim1}</p>`
+        : `<p>No game dimension data available.</p>`
+      const gameDimHTML2 = 
+        data.dim2 && data.dim2.length > 0
+        ? `<p><strong>Top Words in Game's Second Top Dimension:</strong> ${data.dim2}</p>`
+        : `<p>No game dimension data available.</p>`
+      const gameDimHTML3 = 
+        data.dim3 && data.dim3.length > 0
+        ? `<p><strong>Top Words in Game's Third Top Dimension:</strong> ${data.dim3}</p>`
+        : `<p>No game dimension data available.</p>`
+      const gameDimHTML4 = 
+        data.dim4 && data.dim4.length > 0
+        ? `<p><strong>Top Words in Game's Fourth Top Dimension:</strong> ${data.dim4}</p>`
+        : `<p>No game dimension data available.</p>`
+      const gameDimHTML5 =
+        data.dim5 && data.dim5.length > 0
+        ? `<p><strong>Top Words in Game's Fifth Top Dimension:</strong> ${data.dim5}</p>`
+        : `<p>No game dimension data available.</p>`
+
+      const queryDimHTML1 = 
+        topQueryDim1 && topQueryDim1.length > 0
+          ? `<p><strong>Top Words in Query's Top Dimension:</strong> ${topQueryDim1}</p>`
+          : `<p>No query dimension data available.</p>`
+      const queryDimHTML2 =
+        topQueryDim2 && topQueryDim2.length > 0
+          ? `<p><strong>Top Words in Query's Second Top Dimension:</strong> ${topQueryDim2}</p>`
+          : `<p>No query dimension data available.</p>`
+      const queryDimHTML3 =
+        topQueryDim3 && topQueryDim3.length > 0
+          ? `<p><strong>Top Words in Query's Third Top Dimension:</strong> ${topQueryDim3}</p>`
+          : `<p>No query dimension data available.</p>`
+      const queryDimHTML4 =
+        topQueryDim4 && topQueryDim4.length > 0
+          ? `<p><strong>Top Words in Query's Fourth Top Dimension:</strong> ${topQueryDim4}</p>`
+          : `<p>No query dimension data available.</p>`
+      const queryDimHTML5 =
+        topQueryDim5 && topQueryDim5.length > 0
+          ? `<p><strong>Top Words in Query's Fifth Top Dimension:</strong> ${topQueryDim5}</p>`
+          : `<p>No query dimension data available.</p>`
+
+      container.innerHTML = gameDimHTML1 + queryDimHTML1 + gameDimHTML2 + queryDimHTML2 + gameDimHTML3 + queryDimHTML3 + gameDimHTML4 + queryDimHTML4 + gameDimHTML5 + queryDimHTML5;
+    })
+    .catch(err => console.error("Error fetching dimensions:", err));
+}
 
 // code for price slider
 priceInput.addEventListener('input', function () {
@@ -92,7 +148,7 @@ input.addEventListener("keydown", function (event) {
 
 // GENERATING RESULTS
 
-function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments, author, price) {
+function galleryItemTemplate(title, url, image_url, description, rating, rating_count, tags, recent_comments, author, price, score, id, top_query_dim1, top_query_dim2, top_query_dim3, top_query_dim4, top_query_dim5) {
   const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
   const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}`
 
@@ -102,7 +158,7 @@ function galleryItemTemplate(title, url, image_url, description, rating, rating_
     spanContents += tagEl + " "
   });
 
-  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating, author, price};
+  const gameObj = { title, url, image_url, description, tags, recent_comments, rating_count, rating, author, price, score, id, top_query_dim1, top_query_dim2, top_query_dim3, top_query_dim4, top_query_dim5};
   console.log("Rendering game:", gameObj);
 
   return `
@@ -114,6 +170,7 @@ function galleryItemTemplate(title, url, image_url, description, rating, rating_
         <b>${title_string}</b> 
         ${description}
         <span class="tag-span">${spanContents}</span>
+        ${score ? `<p><strong>Score:</strong> ${score}</p>` : ""}
       </div>
     </div>`;
 }
@@ -143,7 +200,14 @@ function filterTextHelper(row) {
       row.tags,
       row.recent_comments,
       row.author,
-      row.price
+      row.price,
+      row.score,
+      row.id,
+      row.top_query_dim1,
+      row.top_query_dim2,
+      row.top_query_dim3,
+      row.top_query_dim4,
+      row.top_query_dim5,
     );
     document.getElementById("gallery").appendChild(tempDiv);
   }
@@ -211,6 +275,11 @@ function openSidebar(game) {
     return `<span class="tag ${extraClass}">${tag}</span>`;
   }).join(" ");
 
+  const topDimHTML = `
+  <button onclick="fetchDimensions(${game.id}, '${game.top_query_dim1}', '${game.top_query_dim2}', '${game.top_query_dim3}', '${game.top_query_dim4}', '${game.top_query_dim5}')" class="dim-btn">Show Top 5 Dimensions</button>
+  <div id="dims-container-${game.id}"></div>`;
+
+
   let commentHTML = "";
   if (game.recent_comments && game.recent_comments.length > 0) {
     const topComments = [...game.recent_comments]
@@ -231,6 +300,8 @@ content.innerHTML = `
   <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
   <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
   <p><strong>Tags:</strong><br>${tagHTML}</p>
+  <p><strong>SVD Score:</strong> ${(game.score) ? `${game.score}` : "No SVD Score"}</p>
+  ${topDimHTML}
   ${commentHTML}
   <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
 `;
@@ -246,12 +317,6 @@ function openSidebarFromElement(el) {
   } catch (err) {
     console.error("Failed to parse game data:", err);
   }
-}
-
-function closeSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.remove("visible");
-  sidebar.classList.add("hidden");
 }
 
 function closeSidebar() {
