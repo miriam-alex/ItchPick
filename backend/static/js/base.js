@@ -313,6 +313,7 @@ function filterText() {
   // console.log("------------------------------------------")
   // console.log("query: " + document.getElementById("filter-text-val").value)
   const query = document.getElementById("filter-text-val").value.trim();
+  let count = 0;
   fetch("/episodes?" + new URLSearchParams({ title: query }).toString())
     .then((response) => response.json())
     .then((data) => {
@@ -327,8 +328,16 @@ function filterText() {
           console.log("selected max price: " + selectedPrice)
           console.log(row)
           filterTextHelper(row);
+          count++;
         }
       });
+      if (count === 0) {
+        const gallery = document.getElementById("gallery");
+        gallery.innerHTML = `
+          <div style="text-align: center; padding: 40px; font-size: 1.2em; color: #999;">
+            No results found
+          </div>`;
+      }
     })
     .finally(() => {
       hideLoader();
