@@ -339,10 +339,18 @@ content.innerHTML = `
   ${scoreHTML}
   ${commentHTML}
   ${topDimHTML}
+  <div id="circular-graph-${game.id}" style="margin-top: 20px;"></div>
   <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
 `;
 
     sidebar.classList.remove("hidden");
+    renderCircularGraph([
+      game.top_query_dim1,
+      game.top_query_dim2,
+      game.top_query_dim3,
+      game.top_query_dim4,
+      game.top_query_dim5
+    ], `circular-graph-${game.id}`);    
     sidebar.classList.add("visible");
 
     const topDimensionsButton = document.getElementById("top-dim-btn");
@@ -496,3 +504,81 @@ authorSearch.addEventListener("input", () => {
     suggestionBox.appendChild(li);
   });
 });
+
+// let's see if the circle renders -_-
+
+const width = 400, height = 500; 
+
+
+function renderCircularGraph(dimStrings, containerId) {
+  const width = 400, height = 400, innerRadius = 40, ringStep = 25;
+  const colorBase = "#fa5c5c"; // base hue
+
+  // word strings into array
+  const dimWords = dimStrings.map(str => str.split(",").map(w => w.trim()).filter(Boolean));
+
+  const allWords = dimWords.flat();
+  const totalBars = allWords.length;
+
+  const svg = d3.select(`#${containerId}`).html("").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+  const angleScale = d3.scaleBand()
+    .domain(d3.range(totalBars))
+    .range([0, 2 * Math.PI])
+    .padding(0.03);
+
+  let barIndex = 0;
+  dimWords.forEach((words, dimIndex) => {
+    const barHeight = 40 + dimIndex * 15; // dim1 length > dim5
+    const brightness = 0.6 + 0.1 * dimIndex; // lighten colors for each dimension
+    const dimColor = d3.hsl(colorBase);
+    dimColor.l = brightness;
+
+    words.forEach((word, i) => {
+      const angle = angleScale(barIndex);
+      const x0 = Math.cos(angle) * innerRadius;
+      const y0 = Math.sin(angle) * innerRadius;
+      const x1 = Math.cos(angle) * (innerRadius + barHeight);
+      const y1 = Math.sin(angle) * (innerRadius + barHeight);
+
+      // each bar 
+      g.append("line")
+        .attr("x1", x0)
+        .attr("y1", y0)
+        .attr("x2", x1)
+        .attr("y2", y1)
+        .attr("stroke", dimColor.toString())
+        .attr("stroke-width", 4);
+
+        const labelRadius = innerRadius + barHeight + 20 + (barIndex % 2 === 0 ? 4 : 0);  // stagger for evens and odds
+        const lx = Math.cos(angle) * labelRadius;
+        const ly = Math.sin(angle) * labelRadius;
+
+        const angleDeg = (angle * 180 / Math.PI);
+        const shouldFlip = angleDeg > 90 && angleDeg < 270;
+
+        g.append("text")
+          .attr("x", lx)
+          .attr("y", ly)
+          .attr("dy", "0.35em")
+          .attr("transform", `rotate(${shouldFlip ? angleDeg + 180 : angleDeg}, ${lx}, ${ly})`)
+          .style("text-anchor", "middle")
+          .style("alignment-baseline", "middle")
+          .style("font-size", "9px")
+          .style("fill", "#fff")
+          .text(word);
+
+        
+
+
+      barIndex++;
+    });
+  });
+}
+
+// TODO: add a legend?
