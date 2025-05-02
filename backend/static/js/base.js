@@ -146,6 +146,8 @@ function galleryItemTemplate(title, url, image_url, description, rating, rating_
   const rating_string = (rating == null || rating_count < 5) ? "" : `(${rating}★)`
   const title_string = (rating == null || rating_count < 5) ? `${title}:` : `${title} ${rating_string}`
 
+  tags = tags.slice(0,3)
+
   let spanContents = ""
   tags.forEach(element => {
     const tagEl = `<span class="tag"> ${element} </span>`

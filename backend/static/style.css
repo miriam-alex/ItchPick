@@ -20,7 +20,7 @@
 
 
 html {
-    background-color: var(--background-color);
+    background: linear-gradient(135deg, #2f4858, #4b3f72, #ff6f91);
 }
 
 body {
@@ -30,7 +30,7 @@ body {
     flex-direction: row;
     height: 100vh;
     overflow: hidden;
-    background-color: var(--background-color);
+    background: linear-gradient(135deg, #2f4858, #4b3f72, #ff6f91);
     margin: 0;
     padding: 0;
 }
@@ -90,7 +90,7 @@ body.sidebar-open .main {
     font-size: 16px;
     border: none;
     outline: 0;
-    background-color: var(--background-color);
+    background: transparent;
     color: white;
 }
 
@@ -230,10 +230,11 @@ body.sidebar-open .main {
     background-color: var(--tag-background-color);
     color: var(--tag-color);
     padding: 6px 12px;
-    border-radius: 20px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     font-size: 14px;      
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for lift */
 }
 
 .tag-span {
@@ -259,11 +260,12 @@ body.sidebar-open .main {
     border: none;
     background-color: var(--tag-dropdown-background-color);
     color: var(--tag-dropdown-color);
-    border-radius: 20px;
+    border-radius: 8px;
     padding: 6px 12px;
     display: flex;
     align-items: center;
     font-size: 14px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for lift */
 }
 
 .tag-dropdown option:disabled {

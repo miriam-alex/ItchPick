@@ -129,7 +129,7 @@ def json_search(query):
             "description": ui_data[i].get("logline") if ui_data[i].get("logline") != None else "No description available",
             "rating": data[i]["rating"]["aggregate_rating"],
             "rating_count": data[i]["rating"]["rating_count"],
-            "tags": data[i]["tags"],
+            "tags": data[i]["tags"][1:],
             "url": data[i]["url"],
             "image_url": data[i]["image"] if "image" in data[i] else None,
             "score": round(score, 4),
