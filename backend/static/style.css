@@ -362,3 +362,7 @@ body.sidebar-open .main {
     justify-content: center;
   }
   
+canvas {
+    width: 100%; 
+    margin: auto;
+}

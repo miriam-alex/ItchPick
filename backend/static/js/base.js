@@ -35,7 +35,9 @@ function hideLoader() {
   if (loader) loader.remove();
 }
 
-function fetchDimensions(gameId, topQueryDim1, topQueryDim2, topQueryDim3, topQueryDim4, topQueryDim5) {
+function fetchDimensions(gameId, queryDims) {
+
+  ordinal_numbers = ["First", "Second", "Third", "Fourth", "Fifth"]
   
   fetch("/dimensions", {
     method: "POST",
@@ -43,51 +45,34 @@ function fetchDimensions(gameId, topQueryDim1, topQueryDim2, topQueryDim3, topQu
     body: JSON.stringify({ game_id: gameId })
   })
     .then(res => res.json())
-    .then(data => {
+    .then(gameDims => {
       const container = document.getElementById(`dims-container-${gameId}`);
-      const gameDimHTML1 = 
-        data.dim1 && data.dim1.length > 0
-        ? `<p><strong>Top Words in Game's Top Dimension:</strong> ${data.dim1}</p>`
-        : `<p>No game dimension data available.</p>`
-      const gameDimHTML2 = 
-        data.dim2 && data.dim2.length > 0
-        ? `<p><strong>Top Words in Game's Second Top Dimension:</strong> ${data.dim2}</p>`
-        : `<p>No game dimension data available.</p>`
-      const gameDimHTML3 = 
-        data.dim3 && data.dim3.length > 0
-        ? `<p><strong>Top Words in Game's Third Top Dimension:</strong> ${data.dim3}</p>`
-        : `<p>No game dimension data available.</p>`
-      const gameDimHTML4 = 
-        data.dim4 && data.dim4.length > 0
-        ? `<p><strong>Top Words in Game's Fourth Top Dimension:</strong> ${data.dim4}</p>`
-        : `<p>No game dimension data available.</p>`
-      const gameDimHTML5 =
-        data.dim5 && data.dim5.length > 0
-        ? `<p><strong>Top Words in Game's Fifth Top Dimension:</strong> ${data.dim5}</p>`
-        : `<p>No game dimension data available.</p>`
+      container.innerHTML =  "<canvas id='dimsChart'></canvas>"
+      queryDims = JSON.parse(queryDims)
 
-      const queryDimHTML1 = 
-        topQueryDim1 && topQueryDim1.length > 0
-          ? `<p><strong>Top Words in Query's Top Dimension:</strong> ${topQueryDim1}</p>`
-          : `<p>No query dimension data available.</p>`
-      const queryDimHTML2 =
-        topQueryDim2 && topQueryDim2.length > 0
-          ? `<p><strong>Top Words in Query's Second Top Dimension:</strong> ${topQueryDim2}</p>`
-          : `<p>No query dimension data available.</p>`
-      const queryDimHTML3 =
-        topQueryDim3 && topQueryDim3.length > 0
-          ? `<p><strong>Top Words in Query's Third Top Dimension:</strong> ${topQueryDim3}</p>`
-          : `<p>No query dimension data available.</p>`
-      const queryDimHTML4 =
-        topQueryDim4 && topQueryDim4.length > 0
-          ? `<p><strong>Top Words in Query's Fourth Top Dimension:</strong> ${topQueryDim4}</p>`
-          : `<p>No query dimension data available.</p>`
-      const queryDimHTML5 =
-        topQueryDim5 && topQueryDim5.length > 0
-          ? `<p><strong>Top Words in Query's Fifth Top Dimension:</strong> ${topQueryDim5}</p>`
-          : `<p>No query dimension data available.</p>`
+      console.log("GAME DIMS")
+      console.log(gameDims)
+      console.log("QUERY DIMS")
+      console.log(queryDims)
 
-      container.innerHTML = gameDimHTML1 + queryDimHTML1 + gameDimHTML2 + queryDimHTML2 + gameDimHTML3 + queryDimHTML3 + gameDimHTML4 + queryDimHTML4 + gameDimHTML5 + queryDimHTML5;
+      // List of words that we don't want to show to the user (will omit)
+      const uselessWords = ["license","button","level","version","itch","io","arrow","controls","mouse","v1","space","https","wasd", "linkify","href"]
+      const uselessWordsSet = new Set(uselessWords);
+
+      const gameWeights = gameDims.map(dim => dim.relative_strength);
+      const queryWeights = queryDims.map(dim => dim.relative_strength);
+      const gameWords = gameDims
+                      .map(dim => dim.dimension.filter(word => !uselessWordsSet.has(word)))
+      const queryWords = queryDims
+                      .map(dim => dim.dimension.filter(word => !uselessWordsSet.has(word)))
+      renderDimsChart(gameWeights, queryWeights, gameWords, queryWords);
+
+      if (queryWeights[0] === 0) {
+        const note = document.createElement("p");
+        note.textContent = "Note: query contains no recognizable terms";
+        container.appendChild(note);
+      }
+
     })
     .catch(err => console.error("Error fetching dimensions:", err));
 }
@@ -310,10 +295,14 @@ function openSidebar(game) {
   const hideDimText = "Hide Dimensions"
   const divID = `dims-container-${game.id}`
 
-  const topDimHTML = `
-  <button onclick="fetchDimensions(${game.id}, '${game.top_query_dim1}', '${game.top_query_dim2}', '${game.top_query_dim3}', '${game.top_query_dim4}', '${game.top_query_dim5}')" id="top-dim-btn" class="dim-btn">${showDimText}</button>
-  <div id="${divID}"></div>`;
+  console.log("game object: ")
+  console.log(game)
 
+  query_dims = JSON.stringify([game.top_query_dim1, game.top_query_dim2, game.top_query_dim3, game.top_query_dim4, game.top_query_dim5]).replace(/"/g, '&quot;');
+
+  const topDimHTML = `
+  <button onclick="fetchDimensions(${game.id}, '${query_dims}')" id="top-dim-btn" class="dim-btn">${showDimText}</button>
+  <div id="${divID}"></div>`;
 
   let commentHTML = "";
   if (game.recent_comments && game.recent_comments.length > 0) {
@@ -329,42 +318,43 @@ function openSidebar(game) {
     commentHTML += `</ul></p>`;
   }
 
-content.innerHTML = `
-  <h2>${game.title}</h2>
-  <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
-  <p><strong>Price:</strong> ${(game.price == 0 ? "Free" : "$" + game.price)}</p>
-  <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
-  <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
-  <p><strong>Tags:</strong><br>${tagHTML}</p>
-  ${scoreHTML}
-  ${commentHTML}
-  ${topDimHTML}
-  <div id="circular-graph-${game.id}" style="margin-top: 20px;"></div>
-  <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
-`;
+  content.innerHTML = `
+    <h2>${game.title}</h2>
+    <p><strong>Rating:</strong> ${(game.rating && game.rating_count >= 2) ? `${game.rating}★` : "No rating"} (${game.rating_count || 0} votes)</p>
+    <p><strong>Price:</strong> ${(game.price == 0 ? "Free" : "$" + game.price)}</p>
+    <img src="${game.image_url}" style="width: 100%; border-radius: 8px;" />
+    <p style="margin-top: 1em;"><strong>Description:</strong><br>${game.description}</p>
+    <p><strong>Tags:</strong><br>${tagHTML}</p>
+    ${scoreHTML}
+    ${commentHTML}
+    ${topDimHTML}
+    <div id="circular-graph-${game.id}" style="margin-top: 20px;"></div>
+    <p style="margin-top: 1em;"><a href="${game.url}" target="_blank" style="color: #fa5c5c;">Open in Itch.io →</a></p>
+  `;
 
-    sidebar.classList.remove("hidden");
-    renderCircularGraph([
-      game.top_query_dim1,
-      game.top_query_dim2,
-      game.top_query_dim3,
-      game.top_query_dim4,
-      game.top_query_dim5
-    ], `circular-graph-${game.id}`);    
-    sidebar.classList.add("visible");
+  sidebar.classList.remove("hidden");
+  // renderCircularGraph([
+  //   game.top_query_dim1,
+  //   game.top_query_dim2,
+  //   game.top_query_dim3,
+  //   game.top_query_dim4,
+  //   game.top_query_dim5
+  // ], `circular-graph-${game.id}`);    
+  sidebar.classList.add("visible");
 
-    const topDimensionsButton = document.getElementById("top-dim-btn");
-    const topDimensionsDiv = document.getElementById(divID);
+  const topDimensionsButton = document.getElementById("top-dim-btn");
+  const topDimensionsDiv = document.getElementById(divID);
 
-    topDimensionsButton.addEventListener("click", () => {
-      if (topDimensionsButton.textContent == showDimText) {
-        topDimensionsButton.textContent = hideDimText
-        topDimensionsDiv.style.display = "block";
-      } else {
-        topDimensionsButton.textContent = showDimText
-        topDimensionsDiv.style.display = "none"
-      }
-    });
+  topDimensionsButton.addEventListener("click", () => {
+    if (topDimensionsButton.textContent == showDimText) {
+      topDimensionsButton.textContent = hideDimText
+      topDimensionsDiv.style.display = "block";
+    } else {
+      topDimensionsButton.textContent = showDimText
+      topDimensionsDiv.style.display = "none"
+    }
+  });
+
 }
 
 function openSidebarFromElement(el) {
@@ -582,3 +572,94 @@ function renderCircularGraph(dimStrings, containerId) {
 }
 
 // TODO: add a legend?
+
+function renderDimsChart(gameWeights, queryWeights, gameWords, queryWords) {
+  const ctx = document.getElementById('dimsChart').getContext('2d');
+
+  const latentDimensions = ['Dim 1', 'Dim 2', 'Dim 3', 'Dim 4', 'Dim 5'];
+
+  gameWords = gameWords.map(wordArray => wordArray.slice(0,5).join(', '))
+  queryWords = queryWords.map(wordArray => wordArray.slice(0,5).join(', '))
+
+  new Chart(ctx, {
+      type: 'bar',
+      data: {
+          labels: latentDimensions,
+          datasets: [
+              {
+                  label: 'Weight of game dimension',
+                  data: gameWeights,
+                  backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                  borderColor: 'rgba(54, 162, 235, 1)',
+                  borderWidth: 1
+              },
+              {
+                  label: 'Weight of query dimension',
+                  data: queryWeights,
+                  backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                  borderColor: 'rgba(255, 99, 132, 1)',
+                  borderWidth: 1
+              }
+          ]
+      },
+      options: {
+        responsive: true,
+        devicePixelRatio: 2,
+        maintainAspectRatio: true,
+        plugins: {
+            tooltip: {
+                backgroundColor: '#333',
+                bodyFont: {
+                    family: 'Lato',
+                    size: 12
+                },
+                callbacks: {
+                    afterBody: function(context) {
+                        const index = context[0].dataIndex;
+                        return [
+                            'Game Top Words: ' + gameWords[index],
+                            'Query Top Words: ' + queryWords[index]
+                        ];
+                    }
+                }
+            },
+            title: {
+                display: true,
+                color: '#fff',
+                font: {
+                    family: 'Lato',
+                    size: 12,
+                    weight: 'bold'
+                }
+            },
+            legend: {
+                labels: {
+                    color: '#fff',
+                    font: {
+                        family: 'Lato'
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    color: '#fff',
+                    font: {
+                        family: 'Lato'
+                    }
+                }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: '#fff',
+                    font: {
+                        family: 'Lato'
+                    }
+                }
+            }
+        }
+      }
+  });
+  }
